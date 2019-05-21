@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "ligath"
+version = "0.1.0"
+description = ""
+authors = ["GROOVE X Development Team", "puhitaku <puhitaku@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+python-debian = "^0.1.34"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+black = { version = "*", allows-prereleases = true }
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

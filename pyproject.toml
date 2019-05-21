@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ligath"
+name = "apt"
 version = "0.1.0"
 description = ""
 authors = ["GROOVE X Development Team", "puhitaku <puhitaku@gmail.com>"]

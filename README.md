@@ -14,7 +14,7 @@ Tools are in following directories:
 Instruction
 ===========
 
-1. [Gather copyright metadata on a real machine](#gather-copyright-metadata)
+1. [Gather copyright metadata on a real machine](#gather-copyright-metadata-on-a-real-machine)
 2. [Import the gathered data](#import-the-gathered-data)
 3. [Input license info manually](#input-license-info-manually)
 4. [Export as list](#export-as-list)

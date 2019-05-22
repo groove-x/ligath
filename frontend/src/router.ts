@@ -1,10 +1,12 @@
 import Vue from 'vue';
-import Router from 'vue-router';
-import Home from './views/Home.vue';
+import Router, { Route } from 'vue-router';
+import Home from '@/views/Home.vue';
+import Package from '@/views/Package.vue';
+import store from '@/store';
 
 Vue.use(Router);
 
-export default new Router({
+const r = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -21,5 +23,28 @@ export default new Router({
       // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "about" */ './views/About.vue'),
     },
+    {
+      path: '/package/:name',
+      name: 'package',
+      component: Package,
+    },
   ],
 });
+
+r.beforeEach((to: Route, from: Route, next: Function) => {
+  if (!store.state.fresh) {
+    next();
+    return;
+  }
+
+  if (to.name === 'package' || to.name === 'about') {
+    next({name: 'home'});
+  } else if (to.name === 'home') {
+    store.state.fresh = false;
+    next();
+  } else {
+    next();
+  }
+});
+
+export default r;

@@ -6,8 +6,8 @@
       <b-nav-item
         exact
         active-class="active"
-        v-for="tab in this.$store.state.tabs"
-        v-bind:to="'/packages/' + tab.tabName">
+        v-for="[_, tab] in this.$store.getters.tabsAsList"
+        v-bind:to="'/package/' + tab.tabName">
         {{tab.tabName}}
       </b-nav-item>
     </b-nav>

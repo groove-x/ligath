@@ -8,7 +8,7 @@
 import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
 import MyButton from '@/components/MyButton.vue';
 import { HomeState, Tab } from '@/model';
-import { VueRouter } from 'vue-router/types/router';
+import { Route } from 'vue-router/types/router';
 
 const components = { MyButton };
 
@@ -30,18 +30,17 @@ export default class Home extends Vue {
   }
 
   public onButtonClicked() {
-    const store = this.$store;
     this.newTab(this.counter.toString());
     this.counter += 1;
   }
 
-  public beforeRouteEnter(to: VueRouter, from: VueRouter, next: any) {
+  public beforeRouteEnter(to: Route, from: Route, next: Function) {
     next((component: Home) => {
       component.counter = component.$store.state.home.lastCounter;
     });
   }
 
-  public beforeRouteLeave(to: VueRouter, from: VueRouter, next: any) {
+  public beforeRouteLeave(to: Route, from: Route, next: Function) {
     const hs = new HomeState();
     hs.lastCounter = this.counter;
     this.$store.state.home = hs;

@@ -6,6 +6,8 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    endpoint_front: window.location.hostname + ":" + window.location.port,
+    endpoint_back: "http://" + window.location.hostname + ":3939",
     fresh: true,
     tabs: new Map<string, any>(),
     tabsTick: 0,

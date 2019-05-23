@@ -5,7 +5,8 @@
     <b-nav-item
       exact
       active-class="active"
-      v-for="[_, tab] in this.$store.getters.tabsAsList"
+      v-for="[key, tab] in this.$store.getters.tabsAsList"
+      :key="key"
       v-bind:to="'/package/' + tab.tabName">
       {{tab.tabName}}
     </b-nav-item>
@@ -20,5 +21,4 @@
 </script>
 
 <style scoped>
-
 </style>

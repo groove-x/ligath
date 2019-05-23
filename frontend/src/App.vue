@@ -1,8 +1,8 @@
 <template>
-  <div id="app">
-    <NavBar></NavBar>
-    <router-view/>
-  </div>
+  <b-container fluid id="app">
+      <NavBar></NavBar>
+      <router-view/>
+  </b-container>
 </template>
 
 <script lang="ts">
@@ -17,15 +17,27 @@
 </script>
 
 <style lang="scss">
+html, body {
+  height: 100%;
+}
+body {
+  padding: 10px;
+}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin: 10px 10px 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
 #nav {
+  width: 100%;
   margin-bottom: 10px;
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 </style>

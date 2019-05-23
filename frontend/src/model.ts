@@ -6,12 +6,26 @@ class Tab {
   }
 }
 
-class HomeState {
-  public lastCounter: number;
+class Package {
+  public id: string;
 
-  constructor() {
-    this.lastCounter = 0;
+  constructor(values: any) {
+    this.id = values.id;
   }
 }
 
-export { Tab, HomeState };
+class HomeState {
+  public lastCounter: number;
+  public unclassified: Package[];
+  public manualClassified: Package[];
+  public autoClassified: Package[];
+
+  constructor() {
+    this.lastCounter = 0;
+    this.unclassified = new Array<Package>();
+    this.manualClassified = new Array<Package>();
+    this.autoClassified = new Array<Package>();
+  }
+}
+
+export { Tab, Package, HomeState };

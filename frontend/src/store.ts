@@ -26,6 +26,9 @@ export default new Vuex.Store({
     fresh(state) {
       state.fresh = false;
     },
+    getUnclassified(state, pkgs) {
+      state.home.unclassified = pkgs;
+    }
   },
   getters: {
     tabsAsList: (state) => {

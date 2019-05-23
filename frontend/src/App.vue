@@ -1,19 +1,20 @@
 <template>
   <div id="app">
-    <b-nav tabs id="nav">
-      <b-nav-item exact active-class="active" to="/"><font-awesome-icon icon="igloo" /></b-nav-item>
-      <b-nav-item exact active-class="active" to="/about">Link</b-nav-item>
-      <b-nav-item
-        exact
-        active-class="active"
-        v-for="[_, tab] in this.$store.getters.tabsAsList"
-        v-bind:to="'/package/' + tab.tabName">
-        {{tab.tabName}}
-      </b-nav-item>
-    </b-nav>
+    <NavBar></NavBar>
     <router-view/>
   </div>
 </template>
+
+<script lang="ts">
+  import { Component, Vue } from 'vue-property-decorator';
+  import NavBar from '@/components/NavBar.vue'
+
+  const components = {NavBar} ;
+
+  @Component({components})
+  export default class App extends Vue {
+  }
+</script>
 
 <style lang="scss">
 #app {

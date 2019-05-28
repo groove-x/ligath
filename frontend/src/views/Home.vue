@@ -78,15 +78,18 @@ export default class Home extends Vue {
 
   @Emit()
   public newTab(tabName: string) {
-    store.commit('newTab', new Tab(tabName));
-    router.push('/package/' + tabName);
+    store.commit('newTab', tabName);
+    axios.get(store.state.endpoint_back + "/api/packages/" + tabName)
+      .then((res: AxiosResponse) => {
+        store.commit('setPackageData', res.data);
+        router.push('/package/' + tabName);
+      });
   }
 
   public onXHR() {
     axios.get(store.state.endpoint_back + "/api/packages")
       .then((res: AxiosResponse) => {
         store.commit('getUnclassified', res.data);
-        console.log(res.data)
       })
   }
 

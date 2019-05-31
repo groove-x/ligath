@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	a.Close()
 }
 
 func setMock(mock bool) Middleware {
@@ -68,13 +69,23 @@ func NewAPI() *API {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/packages", toHandlerFunc(a.getPackages))
+		r.Get("/packages/{package}@{version}", toHandlerFunc(a.getPackage))
 	})
 
 	var s Storage
 	if isMock {
 		s = NewMockStorage()
 	} else {
-		s = NewBoltStorage()
+		var err error
+		s, err = NewBoltStorage("ligath.db")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err := s.Setup()
+	if err != nil {
+		panic(err)
 	}
 
 	wd, _ := os.Getwd()
@@ -99,6 +110,10 @@ func NewAPI() *API {
 	return a
 }
 
+func (a *API) Close() {
+	a.storage.Close()
+}
+
 func (a *API) Serve() error {
 	err := http.ListenAndServe("0.0.0.0:3939", a.router)
 	if err != nil {
@@ -107,6 +122,36 @@ func (a *API) Serve() error {
 	return nil
 }
 
+func (a *API) getPackage(w http.ResponseWriter, r *http.Request, isMock bool) {
+	pkg := chi.URLParam(r, "package")
+	ver := chi.URLParam(r, "version")
+	if pkg != "" && ver != "" {
+		pkg, err := a.storage.GetPackage(pkg, ver)
+		if err != nil {
+			// TODO: handle error
+			render.Status(r, 500)
+		} else if pkg == nil {
+			render.Status(r, 404)
+		} else {
+			render.JSON(w, r, pkg)
+		}
+	} else {
+		render.Status(r, 400)
+	}
+}
+
 func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
-	render.JSON(w, r, a.storage.GetPackages())
+	if kind := r.URL.Query().Get("kind"); kind != "" {
+		switch kind {
+		case "parsed":
+			render.JSON(w, r, a.storage.GetParsedPackages())
+		case "notparsed":
+			render.JSON(w, r, a.storage.GetNotParsedPackages())
+		case "manual":
+			render.JSON(w, r, a.storage.GetManualPackages())
+		default:
+			render.Status(r, 400)
+		}
+	}
+	render.Status(r, 400)
 }

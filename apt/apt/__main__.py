@@ -109,7 +109,9 @@ def parse_copyright(
             not_parsed.append(Package(package, version, [], raw_copyright))
             print(f"Unknown License!!: {fp.license.synopsis}")
             return
-        copyrights.append(Copyright(fp.copyright, fp.files, lic))
+
+        cleansed = "\n".join(l.lstrip() for l in fp.copyright.split("\n"))
+        copyrights.append(Copyright(cleansed, fp.files, lic))
 
     parsed.append(Package(package, version, copyrights, raw_copyright))
 

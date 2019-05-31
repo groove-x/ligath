@@ -22,14 +22,14 @@ const r = new Router({
       component: About,
     },
     {
-      path: '/package/:name',
+      path: '/package/:name@:version',
       name: 'package',
       component: Package,
     },
   ],
 });
 
-r.beforeEach((to: Route, from: Route, next: Function) => {
+r.beforeEach((to: Route, from: Route, next: (arg?: any) => void) => {
   if (!store.state.fresh) {
     next();
     return;

@@ -1,43 +1,45 @@
 class Tab {
-  public tabName: string;
+  public name: string;
+  public version: string;
 
-  constructor(tabName: string) {
-    this.tabName = tabName;
+  constructor(name: string, version: string) {
+    this.name = name;
+    this.version = version;
   }
 }
 
 class License {
   public name: string;
-  public machineReadableNames: string[];
+  public machineReadableName: string;
   public body: string;
 
   constructor(values: any) {
     this.name = values.name;
-    this.machineReadableNames = values.machineReadableNames;
+    this.machineReadableName = values.machineReadableName;
     this.body = values.body;
   }
 }
 
 class Copyright {
-  public notice: string;
-  public fileRange: string;
+  public copyright: string;
+  public fileRange: string[];
   public license: License;
 
   constructor(values: any) {
-    this.notice = values.notice;
+    this.copyright = values.copyright;
     this.fileRange = values.file_range;
     this.license = new License(values.license);
   }
 }
 
 class Package {
-  public id: string;
+  public name: string;
   public version: string;
   public copyrights: Copyright[];
   public rawCopyright: string;
 
   constructor(values: any) {
-    this.id = values.id;
+    this.name = values.name;
     this.version = values.version;
     this.copyrights = new Array<Copyright>();
     values.copyrights.forEach((c: any) => {
@@ -47,18 +49,28 @@ class Package {
   }
 }
 
-class HomeState {
-  public lastCounter: number;
-  public unclassified: Package[];
-  public manualClassified: Package[];
-  public autoClassified: Package[];
+class PackageListItem {
+  public name: string;
+  public version: string;
 
-  constructor() {
-    this.lastCounter = 0;
-    this.unclassified = new Array<Package>();
-    this.manualClassified = new Array<Package>();
-    this.autoClassified = new Array<Package>();
+  constructor(name: string, version: string) {
+    this.name = name;
+    this.version = version;
   }
 }
 
-export { Tab, Package, HomeState };
+class HomeState {
+  public lastCounter: number;
+  public parsed: PackageListItem[];
+  public notParsed: PackageListItem[];
+  public manual: PackageListItem[];
+
+  constructor() {
+    this.lastCounter = 0;
+    this.parsed = new Array<PackageListItem>();
+    this.notParsed = new Array<PackageListItem>();
+    this.manual = new Array<PackageListItem>();
+  }
+}
+
+export { Tab, License, Copyright, Package, HomeState };

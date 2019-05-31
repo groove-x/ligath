@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid id="package-wrapper">
+  <b-container fluid id="wrapper">
     <b-row id="toolbar" class="mb-2">
       <b-button-toolbar>
         <b-button-group class="mr-1">
@@ -26,7 +26,7 @@
                 @click="editCopyright(i)"
                 href="#"
               >
-                {{p.fileRange}}, {{p.license.name}}
+                {{p.license.name}}
               </b-list-group-item>
               <b-list-group-item @click="addCopyright" href="#">+ Add new notice</b-list-group-item>
             </b-list-group>
@@ -34,11 +34,11 @@
           <form class="col-8 sub-col">
             <div class="form-group">
               <label for="range" class="col col-form-label">Range</label>
-              <input id="range" class="form-control" v-model="this.editingCopyright.fileRange"/>
+              <textarea id="range" class="form-control" v-model="this.editingCopyright.range"></textarea>
             </div>
             <div class="form-group">
               <label for="copyright" class="col col-form-label">Copyright</label>
-              <input id="copyright" class="form-control" v-model="this.editingCopyright.copyright"/>
+              <textarea id="copyright" class="form-control" v-model="this.editingCopyright.copyright"></textarea>
             </div>
             <div class="form-group">
               <label for="license" class="col col-form-label">License</label>
@@ -58,23 +58,40 @@
 </template>
 
 <style lang="scss">
-  #package-wrapper {
+  #wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
   }
+
   #toolbar {
     flex-grow: 0;
     flex-shrink: 0;
   }
+
   #main-row {
     height: 100%;
     flex-grow: 1;
   }
+
+  #copyright-list {
+    padding: 0;
+    background-color: #eee;
+  }
+
+  #raw-copyright {
+    font-family: monospace;
+  }
+
+  #copyright, #range {
+    height: 200px;
+  }
+
   .sub-row {
     height: 100%;
-    margin: 10px 0 0;
+    margin: 0;
   }
+
   .sub-col {
     display: flex;
     flex-direction: column;
@@ -93,12 +110,13 @@
       &:nth-child(n+2) {
         margin-top: 10px;
       }
-      margin-bottom: 0;
+      margin-bottom: 5px;
       padding: 2px 0 2px;
       color: #fff;
       background-color: #6c757d;
       flex-grow: 0;
       flex-shrink: 0;
+      border-radius: .25rem;
     }
 
     .input-body {
@@ -107,9 +125,8 @@
     }
   }
 
-  #copyright-list {
-    padding: 0;
-    background-color: #eee;
+  .form-group {
+    margin-bottom: 5px;
   }
 
   .package-list-col {
@@ -126,26 +143,18 @@
     }
   }
 
-  #raw-copyright {
-    font-family: monospace;
-  }
-
-  .form-group {
-    display: flex;
-  }
-
-  label.col-form-label {
+  .col-form-label {
     display: inline-block;
-    padding-left: 0;
-  }
-
-  input {
-    display: inline-block;
+    padding: 0;
   }
 
   .parsed-buttons {
     padding: 0;
     float: right;
+  }
+
+  input {
+    display: inline-block;
   }
 </style>
 

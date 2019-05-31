@@ -21,9 +21,18 @@ class License {
 }
 
 class Copyright {
+  private fileRange: string[];
+
   public copyright: string;
-  public fileRange: string[];
   public license: License;
+
+  private get range(): string {
+    return this.fileRange.join('\n');
+  }
+
+  private set range(newVal: string) {
+    this.fileRange = newVal.split('\n');
+  }
 
   constructor(values: any) {
     this.copyright = values.copyright;

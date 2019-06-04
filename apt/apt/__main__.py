@@ -85,10 +85,7 @@ def parse_copyright(
             print(f"{package}: {e}")
             return
 
-        if syn in known_licenses:
-            li = known_licenses[lp.license.synopsis]
-            li.machine_readable_name = lp.license.synopsis
-        else:
+        if syn not in known_licenses:
             li = License(lp.license.synopsis, lp.license.synopsis, lp.license.text)
             known_licenses[lp.license.synopsis] = li
 
@@ -104,13 +101,16 @@ def parse_copyright(
             print(f"{package}: {e}")
             return
 
-        lic = known_licenses.get(syn, None)
-        if fp.license.synopsis is None:
+        if syn is None:
             not_parsed.append(Package(package, version, [], raw_copyright))
             print(f"Unknown License!!: {fp.license.synopsis}")
             return
 
-        cleansed = "\n".join(l.lstrip() for l in fp.copyright.split("\n"))
+        lic = known_licenses.get(syn, None)
+        if fp.copyright is not None:
+            cleansed = "\n".join(l.lstrip() for l in fp.copyright.split("\n"))
+        else:
+            cleansed = ""
         copyrights.append(Copyright(cleansed, fp.files, lic))
 
     parsed.append(Package(package, version, copyrights, raw_copyright))

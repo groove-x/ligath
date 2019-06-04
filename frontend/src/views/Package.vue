@@ -2,55 +2,89 @@
   <b-container fluid id="wrapper">
     <b-row id="toolbar" class="mb-2">
       <b-button-toolbar>
-        <b-button-group class="mr-1">
-          <b-button variant="primary">Save</b-button>
-          <b-button @click="saveAndClose" variant="secondary">Save & Close</b-button>
-        </b-button-group>
         <b-button-group>
+          <b-button @click="save" variant="secondary">Save</b-button>
+          <b-button @click="close" variant="secondary">Close</b-button>
+          <b-button @click="saveAndClose" variant="primary">Save & Close</b-button>
+        </b-button-group>
+        <b-button-group class="ml-1">
           <b-button variant="danger">Delete</b-button>
+        </b-button-group>
+        <b-button-group class="ml-2">
+          <div
+            id="state-saving"
+            class="btn rounded-pill btn-outline-dark"
+            v-if="$data.state === 1"
+          >
+            Saving
+          </div>
+          <div
+            id="state-saved"
+            class="btn rounded-pill btn-outline-primary"
+            v-if="$data.state === 2"
+          >
+            Saved successfully
+          </div>
+          <div
+            id="state-fail"
+            class="btn rounded-pill btn-outline-danger"
+            v-if="$data.state === 3"
+          >
+            Failed
+          </div>
         </b-button-group>
       </b-button-toolbar>
     </b-row>
     <b-row id="main-row">
       <b-col class="sub-col col-6">
         <p class="input-title">Raw copyright</p>
-        <b-form-textarea id="raw-copyright" class="input-body" v-model="this.package.rawCopyright"></b-form-textarea>
+        <b-form-textarea id="raw-copyright" class="input-body" v-model="$data.package.rawCopyright"></b-form-textarea>
       </b-col>
       <b-col class="sub-col col-6">
         <p class="input-title">Parsed copyright</p>
         <b-row class="sub-row">
-          <b-col id="copyright-list" class="rounded sub-col col-4">
+          <b-col id="copyright-list" class="rounded sub-col col-3">
             <b-list-group class="package-list">
               <b-list-group-item
-                v-for="(p, i) in this.$store.state.packages.get(this.$route.params.name+this.$route.params.version).copyrights"
+                v-for="(p, i) in this.$store.state.packages.get(this.$route.params.name+this.$route.params.version+this.$route.params.kind).copyrights"
                 @click="editCopyright(i)"
                 href="#"
               >
-                {{p.license.name}}
+                {{p.license.name.trim() === "" ? "(No Name)" : p.license.name.trim()}}
               </b-list-group-item>
               <b-list-group-item @click="addCopyright" href="#">+ Add new notice</b-list-group-item>
             </b-list-group>
           </b-col>
-          <form class="col-8 sub-col">
-            <div class="form-group">
-              <label for="range" class="col col-form-label">Range</label>
-              <textarea id="range" class="form-control" v-model="this.editingCopyright.range"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="copyright" class="col col-form-label">Copyright</label>
-              <textarea id="copyright" class="form-control" v-model="this.editingCopyright.copyright"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="license" class="col col-form-label">License</label>
-              <select id="license" class="form-control" v-model="this.editingCopyright.license">
-                <option></option>
-              </select>
-            </div>
-            <div class="col text-right parsed-buttons">
-              <b-button class="btn mr-1">Save</b-button>
-              <b-button class="btn-danger">Delete</b-button>
-            </div>
-          </form>
+          <b-col class="col-9 sub-col">
+            <form>
+              <div class="form-group">
+                <label for="range" class="col col-form-label">Range</label>
+                <textarea id="range" class="form-control" v-model="$data.editingCopyright.range"></textarea>
+                <label for="copyright" class="col col-form-label">Copyright</label>
+                <textarea id="copyright" class="form-control" v-model="$data.editingCopyright.copyright"></textarea>
+                <b-row class="sub-row">
+                  <b-col class="col-6 pr-2 pl-0">
+                    <label for="license-name" class="col col-form-label">License Name</label>
+                    <input id="license-name" class="form-control" v-model="$data.editingCopyright.license.name"/>
+                  </b-col>
+                  <b-col class="col-6 pr-0 pl-2">
+                    <label for="license-name-machine" class="col col-form-label">Machine-readable License Name</label>
+                    <input id="license-name-machine" class="form-control" v-model="$data.editingCopyright.license.machineReadableName"/>
+                  </b-col>
+                </b-row>
+                <label for="license-body" class="col col-form-label">License Body</label>
+                <textarea id="license-body" class="form-control" v-model="$data.editingCopyright.license.body"></textarea>
+              </div>
+            </form>
+            <b-row class="sub-row">
+              <b-col class="col-6 text-left parsed-buttons">
+                <b-button id="import" class="btn">Import license from another package</b-button>
+              </b-col>
+              <b-col class="col-6 text-right parsed-buttons">
+                <b-button class="btn-danger">Delete</b-button>
+              </b-col>
+            </b-row>
+          </b-col>
         </b-row>
       </b-col>
     </b-row>
@@ -84,7 +118,31 @@
   }
 
   #copyright, #range {
-    height: 200px;
+    height: 100px;
+  }
+
+  #license-body {
+    height: 300px;
+  }
+
+  #import {
+    margin-bottom: 10px;
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  #state-saving {
+    &:hover {
+      color: #007bff;
+      background-color: unset;
+    }
+  }
+
+  #state-ok {
+    &:hover {
+      color: #007bff;
+      background-color: unset;
+    }
   }
 
   .sub-row {
@@ -146,6 +204,7 @@
   .col-form-label {
     display: inline-block;
     padding: 0;
+    margin-top: 10px;
   }
 
   .parsed-buttons {
@@ -159,16 +218,23 @@
 </style>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Watch } from 'vue-property-decorator';
 import { Route } from 'vue-router/types/router';
 import store from '@/store';
-import { Copyright } from '@/model';
+import { Copyright, License } from '@/model';
+import axios, { AxiosResponse } from 'axios';
 
 const components = {};
 
+enum State {
+  Nothing = 0,
+  Saving,
+  Succeeded,
+  Failed,
+}
+
 Component.registerHooks([
   'beforeRouteEnter',
-  'beforeRouteLeave',
 ]);
 
 @Component({components})
@@ -176,13 +242,35 @@ export default class Package extends Vue {
   public package: any = {};
   public editingCopyright: any = {};
   public editingCopyrightIndex: number = 0;
+  public state: State = State.Nothing;
 
-  public saveAndClose() {
+  public save() {
+    this.state = State.Saving;
+    axios.put(
+      store.state.endpoint_back
+        + `/api/packages/${this.$route.params.name}@${this.$route.params.version}?kind=${this.$route.params.kind}`,
+      this.package,
+    )
+      .then((res: AxiosResponse) => {
+        if (res.status == 200) {
+          this.state = State.Succeeded;
+        } else {
+          this.state = State.Failed;
+        }
+      })
+      .catch((res: AxiosResponse) => {
+        this.state = State.Failed;
+        console.error(res.toString());
+      })
+  }
+
+  public close() {
     let index: number = 0;
     const items: any[][] = Array.from(this.$store.state.tabs);
     items.some((item: any, i) => {
       if (item[1].name === this.$route.params.name
-          && item[1].version === this.$route.params.version) {
+          && item[1].version === this.$route.params.version
+          && item[1].kind === this.$route.params.kind) {
         index = i;
         return true;
       }
@@ -198,15 +286,16 @@ export default class Package extends Vue {
     } else {
       index += 1;
     }
-    this.$router.push({path: '/package/' + items[index][1].name + '@' + items[index][1].version});
+    this.$router.push({path: `/package/${items[index][1].name}@${items[index][1].version}@${items[index][1].kind}`});
+  }
+
+  public saveAndClose() {
+    this.save();
+    this.close();
   }
 
   public addCopyright() {
-    const newlen: number = this.package.copyrights.push(new Copyright({
-      notice: '',
-      fileRange: '',
-      license: '',
-    }));
+    const newlen: number = this.package.copyrights.push(this.createDummyCopyright());
 
     this.editingCopyright = this.package.copyrights[newlen - 1];
     this.editingCopyrightIndex = newlen - 1;
@@ -218,18 +307,39 @@ export default class Package extends Vue {
   }
 
   public created() {
-    const pkg = store.state.packages.get(this.$route.params.name+this.$route.params.version);
-    if (pkg) {
-      this.package = pkg;
-    }
+    console.log(State.Succeeded);
+    this.editingCopyright = this.createDummyCopyright();
   }
 
   public beforeRouteEnter(to: Route, from: Route, next: (arg?: any) => void) {
-    next((component: Package) => {});
+    next((component: Package) => {
+      component.resetCopyright(to, from, component);
+    });
   }
 
-  public beforeRouteLeave(to: Route, from: Route, next: (arg?: any) => void) {
-    next();
+  @Watch('$route')
+  public updateRoute(to: Route, from: Route) {
+    this.resetCopyright(to, from, this);
+    this.editingCopyright = this.createDummyCopyright();
+  }
+
+  private resetCopyright(to: Route, from: Route, component: Package) {
+    const pkg = store.state.packages.get(to.params.name + to.params.version + to.params.kind);
+    if (pkg) {
+      component.package = pkg;
+    }
+  }
+
+  private createDummyCopyright(): Copyright {
+    return new Copyright({
+      copyright: '',
+      fileRange: new Array<string>(),
+      license: new License({
+        name: '',
+        machineReadableName: '',
+        body: '',
+      }),
+    });
   }
 }
 </script>

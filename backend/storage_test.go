@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"testing"
@@ -86,9 +87,11 @@ func TestSimpleMigration(t *testing.T) {
 	defer deleteTestDB(t)
 	defer b.Close()
 
-	err = b.migrate("/hoge/foobar", []byte(input1))
+	migrated, err := b.migrate("/hoge/foobar", []byte(input1))
 	if err != nil {
 		t.Fatal(err)
+	} else if !migrated {
+		t.Fatal("not migrated")
 	}
 
 	err = b.db.View(func(tx *bbolt.Tx) error {
@@ -97,7 +100,7 @@ func TestSimpleMigration(t *testing.T) {
 			t.Fatal("bucket foobar_parsed should exist")
 		}
 
-		raw := parsed.Get([]byte("haveyoumooedtoday1.1.1-1"))
+		raw := parsed.Get([]byte("haveyoumooedtoday/1.1.1-1"))
 		var res Package
 		err = json.Unmarshal(raw, &res)
 		if err != nil {
@@ -147,7 +150,42 @@ func TestSimpleMigration(t *testing.T) {
 			t.Fatalf("different license name: Expected=GPL-3+ Actual=%s", cr.License.Name)
 		}
 
-		return nil
+		// TODO: decide if we add licenses bucket or not
+		/*
+			licenses := tx.Bucket([]byte("licenses"))
+			if licenses == nil {
+				t.Fatal("bucket licenses should exist")
+			}
+
+			raw2 := licenses.Get([]byte("GPL-3+"))
+			var res2 License
+			err = json.Unmarshal(raw2, &res2)
+			if err != nil {
+				t.Fatal("failed to unmarshal:", err)
+			}
+
+			if res2.MachineReadableName != "GPL-3+" {
+				t.Fatalf(
+					"different machine-readable license name: Expected=GPL-3+ Actual=%s",
+					res2.MachineReadableName,
+				)
+			}
+
+			if res2.Name != "GPL-3+" {
+				t.Fatalf(
+					"different license name: Expected=GPL-3+ Actual=%s",
+					res2.Name,
+				)
+			}
+
+			if res2.Body != "This is a test" {
+				t.Fatalf(
+					"different license body: Expected=This is a test Actual=%s",
+					res2.Body,
+				)
+			}
+			return nil
+		*/
 	})
 }
 
@@ -160,9 +198,11 @@ func TestGetPackage(t *testing.T) {
 	defer deleteTestDB(t)
 	defer b.Close()
 
-	err = b.migrate("/hoge/foo", []byte(input1))
+	migrated, err := b.migrate("/hoge/foo", []byte(input1))
 	if err != nil {
 		t.Fatal(err)
+	} else if !migrated {
+		t.Fatal("not migrated")
 	}
 
 	pkg, err := b.GetPackage("haveyoumooedtoday", "1.1.1-1")
@@ -188,14 +228,18 @@ func TestGetMultipleVersion(t *testing.T) {
 	defer deleteTestDB(t)
 	defer b.Close()
 
-	err = b.migrate("/hoge/foo", []byte(input1))
+	migrated, err := b.migrate("/hoge/foo", []byte(input1))
 	if err != nil {
 		t.Fatal(err)
+	} else if !migrated {
+		t.Fatal("not migrated")
 	}
 
-	err = b.migrate("/hoge/bar", []byte(input2))
+	migrated, err = b.migrate("/hoge/bar", []byte(input2))
 	if err != nil {
 		t.Fatal(err)
+	} else if !migrated {
+		t.Fatal("not migrated")
 	}
 
 	pkg, err := b.GetPackage("haveyoumooedtoday", "1.1.1-1")
@@ -222,5 +266,108 @@ func TestGetMultipleVersion(t *testing.T) {
 
 	if pkg.RawCopyright != "Newer Version!!" {
 		t.Fatalf("different copyright: Expected=Newer Version!! Actual=%s", pkg.RawCopyright)
+	}
+}
+
+func TestIterateUtil(t *testing.T) {
+	b, err := NewBoltStorage("test.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer deleteTestDB(t)
+	defer b.Close()
+
+	migrated, err := b.migrate("/hoge/foo", []byte(input1))
+	if err != nil {
+		t.Fatal(err)
+	} else if !migrated {
+		t.Fatal("not migrated")
+	}
+
+	migrated, err = b.migrate("/hoge/bar", []byte(input2))
+	if err != nil {
+		t.Fatal(err)
+	} else if !migrated {
+		t.Fatal("not migrated")
+	}
+
+	// 1. Prefix
+	var found bool
+	err = IterateBucketsItems(
+		b.db,
+		&IterateOption{
+			BucketPrefix: "fo",
+		},
+		func(k, v []byte) error {
+			if bytes.Equal(k, []byte("haveyoumooedtoday/1.1.1-1")) {
+				found = true
+			}
+			return nil
+		},
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	} else if !found {
+		t.Fatal("expected key was not found: haveyoumooedtoday/1.1.1-1")
+	}
+
+	// 2. Suffix
+	found = false
+	err = IterateBucketsItems(
+		b.db,
+		&IterateOption{
+			BucketSuffix: "r_parsed",
+		},
+		func(k, v []byte) error {
+			if bytes.Equal(k, []byte("haveyoumooedtoday/1.1.1-2")) {
+				found = true
+			}
+			return nil
+		},
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	} else if !found {
+		t.Fatal("expected key was not found: haveyoumooedtoday/1.1.1-2")
+	}
+
+	// 3. Exact
+	found = false
+	err = IterateBucketsItems(
+		b.db,
+		&IterateOption{
+			BucketExact: "bar_parsed",
+		},
+		func(k, v []byte) error {
+			if bytes.Equal(k, []byte("haveyoumooedtoday/1.1.1-2")) {
+				found = true
+			}
+			return nil
+		},
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	} else if !found {
+		t.Fatal("expected key was not found: haveyoumooedtoday/1.1.1-2")
+	}
+
+	// 4. Not found
+	err = IterateBucketsItems(
+		b.db,
+		&IterateOption{
+			BucketExact: "bucketwhichdoesnotexist",
+		},
+		func(k, v []byte) error {
+			return nil
+		},
+	)
+
+	// error should happen
+	if err == nil {
+		t.Fatal("no expected error happend")
 	}
 }

@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -70,6 +72,8 @@ func NewAPI() *API {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/packages", toHandlerFunc(a.getPackages))
 		r.Get("/packages/{package}@{version}", toHandlerFunc(a.getPackage))
+		r.Put("/packages/{package}@{version}", toHandlerFunc(a.putPackage))
+		r.Get("/licenses", toHandlerFunc(a.getLicenses))
 	})
 
 	var s Storage
@@ -123,21 +127,63 @@ func (a *API) Serve() error {
 }
 
 func (a *API) getPackage(w http.ResponseWriter, r *http.Request, isMock bool) {
-	pkg := chi.URLParam(r, "package")
-	ver := chi.URLParam(r, "version")
-	if pkg != "" && ver != "" {
-		pkg, err := a.storage.GetPackage(pkg, ver)
+	var err error
+	var pkg *Package
+
+	paramPkg := chi.URLParam(r, "package")
+	paramVer := chi.URLParam(r, "version")
+	paramKind := r.URL.Query().Get("kind")
+
+	if paramPkg != "" && paramVer != "" {
+		if paramKind == "" {
+			pkg, err = a.storage.GetPackage(paramPkg, paramVer)
+		} else if paramKind == "parsed" {
+			pkg, err = a.storage.GetParsedPackage(paramPkg, paramVer)
+		} else if paramKind == "notparsed" {
+			pkg, err = a.storage.GetNotParsedPackage(paramPkg, paramVer)
+		} else if paramKind == "verified" {
+			pkg, err = a.storage.GetVerifiedPackage(paramPkg, paramVer)
+		}
+
 		if err != nil {
 			// TODO: handle error
 			render.Status(r, 500)
+			render.PlainText(w, r, "")
 		} else if pkg == nil {
 			render.Status(r, 404)
+			render.PlainText(w, r, "")
 		} else {
 			render.JSON(w, r, pkg)
 		}
 	} else {
 		render.Status(r, 400)
+		render.PlainText(w, r, "")
 	}
+}
+
+func (a *API) putPackage(w http.ResponseWriter, r *http.Request, isMock bool) {
+	pkg := chi.URLParam(r, "package")
+	ver := chi.URLParam(r, "version")
+	if pkg == "" || ver == "" {
+		render.Status(r, 400)
+		return
+	}
+
+	j := Package{}
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(&j)
+	if err != nil {
+		log.Printf("failed to decode JSON: %v", err)
+		render.Status(r, 400)
+	}
+
+	err = a.storage.PutPackage(j)
+	if err != nil {
+		log.Printf("failed to put package: %v", err)
+		render.Status(r, 500)
+	}
+
+	render.Status(r, 200)
 }
 
 func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
@@ -147,11 +193,15 @@ func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
 			render.JSON(w, r, a.storage.GetParsedPackages())
 		case "notparsed":
 			render.JSON(w, r, a.storage.GetNotParsedPackages())
-		case "manual":
-			render.JSON(w, r, a.storage.GetManualPackages())
+		case "verified":
+			render.JSON(w, r, a.storage.GetVerifiedPackages())
 		default:
 			render.Status(r, 400)
 		}
 	}
 	render.Status(r, 400)
+}
+
+func (a *API) getLicenses(w http.ResponseWriter, r *http.Request, isMock bool) {
+	render.JSON(w, r, a.storage.GetLicenses())
 }

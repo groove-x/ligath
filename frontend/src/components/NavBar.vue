@@ -6,8 +6,8 @@
       active-class="active"
       v-for="[key, tab] in this.$store.getters.tabsAsList"
       :key="key"
-      v-bind:to="'/package/' + tab.name + '@' + tab.version">
-      {{tab.name}} @ {{tab.version}}
+      v-bind:to="`/package/${tab.name}@${tab.version}@${tab.kind}`">
+      {{tab.kind}}: {{tab.name}} @ {{tab.version}}
     </b-nav-item>
   </b-nav>
 </template>

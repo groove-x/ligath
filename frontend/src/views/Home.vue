@@ -3,14 +3,14 @@
     <b-row id="column-names">
       <b-col><p>Auto-detected Packages</p></b-col>
       <b-col><p>Unclassified Packages</p></b-col>
-      <b-col><p>Manually Classified Packages</p></b-col>
+      <b-col><p>Verified Packages</p></b-col>
     </b-row>
     <b-row class="main-row">
       <b-col class="package-list-col">
         <b-list-group id="parsed" class="package-list">
           <b-list-group-item
             v-for="p in this.$store.state.home.parsed"
-            @click="newTab(p.name, p.version)"
+            @click="newTab(p.name, p.version, 'parsed')"
             href="#"
           >
             {{p.name}} @ {{p.version}}
@@ -21,7 +21,7 @@
         <b-list-group id="not-parsed" class="package-list">
           <b-list-group-item
             v-for="p in this.$store.state.home.notParsed"
-            @click="newTab(p.name, p.version)"
+            @click="newTab(p.name, p.version, 'notparsed')"
             href="#"
           >
             {{p.name}} @ {{p.version}}
@@ -31,8 +31,8 @@
       <b-col class="package-list-col">
         <b-list-group id="manual" class="package-list">
           <b-list-group-item
-            v-for="p in this.$store.state.home.manual"
-            @click="newTab(p.name, p.version)"
+            v-for="p in this.$store.state.home.verified"
+            @click="newTab(p.name, p.version, 'verified')"
             href="#"
           >
             {{p.name}} @ {{p.version}}
@@ -92,12 +92,12 @@ export default class Home extends Vue {
   public version!: string;
 
   @Emit()
-  public newTab(name: string, version: string) {
-    store.commit('newTab', {name, version});
-    axios.get(store.state.endpoint_back + '/api/packages/' + name + '@' + version)
+  public newTab(name: string, version: string, kind: string) {
+    store.commit('newTab', {name, version, kind});
+    axios.get(`${store.state.endpoint_back}/api/packages/${name}@${version}?kind=${kind}`)
       .then((res: AxiosResponse) => {
-        store.commit('setPackageData', res.data);
-        router.push('/package/' + name + '@' + version);
+        store.commit('setPackageData', {pkg: new Package(res.data), kind: kind});
+        router.push(`/package/${name}@${version}@${kind}`);
       });
   }
 
@@ -110,9 +110,9 @@ export default class Home extends Vue {
       .then((res: AxiosResponse) => {
         store.commit('getNotParsed', res.data);
       });
-    axios.get(store.state.endpoint_back + '/api/packages?kind=manual')
+    axios.get(store.state.endpoint_back + '/api/packages?kind=verified')
       .then((res: AxiosResponse) => {
-        store.commit('getManual', res.data);
+        store.commit('getVerified', res.data);
       });
   }
 

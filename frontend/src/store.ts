@@ -19,16 +19,16 @@ export default new Vuex.Store({
     newTab(state, t) {
       // increment tabsTick to make reaction happen
       state.tabsTick += 1;
-      state.tabs.set(t.name + t.version, new Tab(t.name, t.version));
+      state.tabs.set(t.name + t.version + t.kind, new Tab(t.name, t.version, t.kind));
     },
     closeTab(state, t) {
       state.tabsTick += 1;
-      state.tabs.delete(t.name + t.version);
+      state.tabs.delete(t.name + t.version + t.kind);
     },
-    setPackageData(state, pkg: any) {
+    setPackageData(state, arg) {
       state.packagesTick += 1;
-      const p = new Package(pkg);
-      state.packages.set(p.name + p.version, p);
+      const p = new Package(arg.pkg);
+      state.packages.set(arg.pkg.name + arg.pkg.version + arg.kind, arg.pkg);
     },
     fresh(state) {
       state.fresh = false;
@@ -39,8 +39,8 @@ export default new Vuex.Store({
     getNotParsed(state, pkgs) {
       state.home.notParsed = pkgs;
     },
-    getManual(state, pkgs) {
-      state.home.manual = pkgs;
+    getVerified(state, pkgs) {
+      state.home.verified = pkgs;
     },
   },
   getters: {

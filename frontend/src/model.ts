@@ -1,10 +1,12 @@
 class Tab {
   public name: string;
   public version: string;
+  public kind: string;
 
-  constructor(name: string, version: string) {
+  constructor(name: string, version: string, kind: string) {
     this.name = name;
     this.version = version;
+    this.kind = kind;
   }
 }
 
@@ -36,7 +38,7 @@ class Copyright {
 
   constructor(values: any) {
     this.copyright = values.copyright;
-    this.fileRange = values.file_range;
+    this.fileRange = values.file_range || values.fileRange;
     this.license = new License(values.license);
   }
 }
@@ -72,13 +74,13 @@ class HomeState {
   public lastCounter: number;
   public parsed: PackageListItem[];
   public notParsed: PackageListItem[];
-  public manual: PackageListItem[];
+  public verified: PackageListItem[];
 
   constructor() {
     this.lastCounter = 0;
     this.parsed = new Array<PackageListItem>();
     this.notParsed = new Array<PackageListItem>();
-    this.manual = new Array<PackageListItem>();
+    this.verified = new Array<PackageListItem>();
   }
 }
 

@@ -22,7 +22,7 @@ const r = new Router({
       component: About,
     },
     {
-      path: '/package/:name@:version',
+      path: '/package/:name@:version@:kind',
       name: 'package',
       component: Package,
     },

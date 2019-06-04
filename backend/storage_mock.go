@@ -38,6 +38,22 @@ func (s *MockStorage) GetPackage(pkg, ver string) (*Package, error) {
 	}
 }
 
+func (s *MockStorage) GetParsedPackage(pkg, ver string) (*Package, error) {
+	return &Package{}, nil
+}
+
+func (s *MockStorage) GetNotParsedPackage(pkg, ver string) (*Package, error) {
+	return &Package{}, nil
+}
+
+func (s *MockStorage) GetVerifiedPackage(pkg, ver string) (*Package, error) {
+	return &Package{}, nil
+}
+
+func (s *MockStorage) PutPackage(pkg Package) error {
+	return nil
+}
+
 func (s *MockStorage) GetParsedPackages() []PackageListItem {
 	return []PackageListItem{
 		{Name: vim.Name, Version: vim.Version},
@@ -48,6 +64,12 @@ func (s *MockStorage) GetNotParsedPackages() []PackageListItem {
 	return []PackageListItem{}
 }
 
-func (s *MockStorage) GetManualPackages() []PackageListItem {
+func (s *MockStorage) GetVerifiedPackages() []PackageListItem {
 	return []PackageListItem{}
+}
+
+func (s *MockStorage) GetLicenses() []License {
+	return []License{
+		GPLv2(),
+	}
 }

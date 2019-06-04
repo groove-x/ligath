@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -118,6 +117,11 @@ func (s *BoltStorage) migrate(fn string, buf []byte) (bool, error) {
 		}
 
 		for _, pkg := range aptOutput.Parsed {
+			for _, c := range pkg.Copyrights {
+				if c.License.Name == "" && c.License.MachineReadableName == "TEXT-TABS" {
+					fmt.Printf("")
+				}
+			}
 			marshaled, err := json.Marshal(pkg)
 			if err != nil {
 				err = fmt.Errorf(
@@ -132,7 +136,7 @@ func (s *BoltStorage) migrate(fn string, buf []byte) (bool, error) {
 			parsed.Put([]byte(pkg.Name+"/"+pkg.Version), marshaled)
 		}
 
-		notParsed, err := tx.CreateBucketIfNotExists([]byte(fn + "_notparsed"))
+		notParsed, err := tx.CreateBucketIfNotExists([]byte(fnBase + "_notparsed"))
 		if err != nil {
 			err = fmt.Errorf("failed to migrate: failed to create bucket: %v", err)
 			log.Print(err)
@@ -183,34 +187,96 @@ func (s *BoltStorage) getMigratedJSONs() []string {
 }
 
 func (s *BoltStorage) GetPackage(pkg, ver string) (*Package, error) {
-	var item *Package
-	noProblemo := errors.New("")
+	return s.getPackageWithOption(pkg, ver, nil)
+}
 
-	err := s.db.View(func(tx *bbolt.Tx) error {
-		return tx.ForEach(func(name []byte, bucket *bbolt.Bucket) error {
-			res := bucket.Get([]byte(pkg + "/" + ver))
-			if res == nil {
-				return nil
-			}
-
-			item = &Package{}
-			err := json.Unmarshal(res, item)
-			if err != nil {
-				return fmt.Errorf("found item, but failed to unmarshal: %v", err)
-			}
-			return noProblemo
-		})
+func (s *BoltStorage) GetParsedPackage(pkg, ver string) (*Package, error) {
+	return s.getPackageWithOption(pkg, ver, &IterateOption{
+		BucketSuffix: "_parsed",
 	})
+}
 
-	if err != nil && err.Error() != noProblemo.Error() {
-		return nil, fmt.Errorf("failed to get package: %v", err)
+func (s *BoltStorage) GetNotParsedPackage(pkg, ver string) (*Package, error) {
+	return s.getPackageWithOption(pkg, ver, &IterateOption{
+		BucketSuffix: "_notparsed",
+	})
+}
+
+func (s *BoltStorage) GetVerifiedPackage(pkg, ver string) (*Package, error) {
+	return s.getPackageWithOption(pkg, ver, &IterateOption{
+		BucketExact: "verified",
+	})
+}
+
+func (s *BoltStorage) getPackageWithOption(pkg, ver string, option *IterateOption) (*Package, error) {
+	var item *Package
+	var options []IterateOption
+
+	if option == nil {
+		options = []IterateOption{
+			{BucketExact: "verified"},
+			{BucketSuffix: "_parsed"},
+			{BucketSuffix: "_notparsed"},
+		}
+	} else {
+		options = []IterateOption{
+			*option,
+		}
 	}
 
-	if item == nil {
-		return nil, nil
-	}
+	var err error
 
-	return item, nil
+	for _, op := range options {
+		err = IterateBuckets(
+			s.db,
+			&op,
+			func(bucket *bbolt.Bucket) error {
+				res := bucket.Get([]byte(pkg + "/" + ver))
+				if res == nil {
+					return nil
+				}
+
+				item = &Package{}
+				err = json.Unmarshal(res, item)
+				if err != nil {
+					item = nil
+					return fmt.Errorf("found item, but failed to unmarshal: %v", err)
+				}
+				return nil
+			},
+		)
+
+		if item != nil || err != nil {
+			return item, err
+		}
+	}
+	return item, err
+}
+
+func (s *BoltStorage) PutPackage(pkg Package) error {
+	err := s.db.Update(func(tx *bbolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("verified"))
+		if err != nil {
+			return fmt.Errorf("failed to create / find bucket: %v", err)
+		}
+
+		out, err := json.Marshal(pkg)
+		if err != nil {
+			return fmt.Errorf("failed to marshal package: %v", err)
+		}
+
+		err = b.Put([]byte(pkg.Name+"/"+pkg.Version), out)
+		if err != nil {
+			return fmt.Errorf("failed to put package: %v", err)
+		}
+		return nil
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to put package: %v", err)
+		log.Print(err)
+		return err
+	}
+	return nil
 }
 
 func (s *BoltStorage) getPackages(kind string) []PackageListItem {
@@ -247,7 +313,49 @@ func (s *BoltStorage) GetNotParsedPackages() []PackageListItem {
 	return s.getPackages("_notparsed")
 }
 
-func (s *BoltStorage) GetManualPackages() []PackageListItem {
-	// it's without hyphen because manual bucket is just named "manual"
-	return s.getPackages("manual")
+func (s *BoltStorage) GetVerifiedPackages() []PackageListItem {
+	// it's without hyphen because verified bucket is just named "verified"
+	return s.getPackages("verified")
+}
+
+func (s *BoltStorage) GetLicenses() []License {
+	l := map[string]License{}
+
+	err := IterateBucketsItems(
+		s.db,
+		&IterateOption{
+			BucketSuffix: "_parsed",
+		},
+		func(k, v []byte) error {
+			var tmp Package
+			err := json.Unmarshal(v, &tmp)
+			if err != nil {
+				err = fmt.Errorf("failed to unmarshal package: %v", err)
+				log.Fatal(err)
+				return err
+			}
+
+			for _, c := range tmp.Copyrights {
+				if c.License.Name == "TEXT-TABS" || c.License.MachineReadableName == "TEXT-TABS" {
+					print()
+				}
+				l[c.License.MachineReadableName] = c.License
+			}
+			return nil
+		},
+	)
+
+	if err != nil {
+		err = fmt.Errorf("failed to get licenses: %v", err)
+		log.Fatal(err)
+		return []License{}
+	}
+
+	var out []License
+	for _, l := range l {
+		out = append(out, l)
+	}
+
+	SortLicenses(&out)
+	return out
 }

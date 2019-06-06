@@ -1,5 +1,11 @@
 # ligath
 
+## Up
+```
+docker-compose up -d
+docker-compose exec app bash
+```
+
 ## Project setup
 ```
 npm install

@@ -7,6 +7,21 @@ import (
 	"go.etcd.io/bbolt"
 )
 
+type IterateError int
+
+const (
+	BucketNotFound IterateError = iota
+)
+
+func (ie IterateError) Error() string {
+	switch ie {
+	case BucketNotFound:
+		return "not found"
+	default:
+		return "unknown"
+	}
+}
+
 type IterateOption struct {
 	BucketPrefix string
 	BucketSuffix string
@@ -53,7 +68,7 @@ func IterateBuckets(b *bbolt.DB, option *IterateOption, fn func(b *bbolt.Bucket)
 			err = fmt.Errorf("failed to iterate over db with option: %+v, err: %v", option, err)
 		}
 	} else if !found {
-		err = fmt.Errorf("failed to find buckets with option: %+v", option)
+		return BucketNotFound
 	}
 
 	return err

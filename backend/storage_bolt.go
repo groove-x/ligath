@@ -241,11 +241,23 @@ func (s *BoltStorage) getPackageWithOption(pkg, ver string, option *IterateOptio
 			},
 		)
 
-		if item != nil || err != nil {
-			return item, err
+		if err != nil {
+			switch casted := err.(type) {
+			case IterateError:
+				if casted == BucketNotFound {
+					continue
+				}
+			}
+			return nil, err
+		} else if item != nil {
+			return item, nil
 		}
 	}
-	return item, err
+
+	if item == nil {
+		return nil, fmt.Errorf("not found package %s/%s", pkg, ver)
+	}
+	return item, nil
 }
 
 func (s *BoltStorage) PutPackage(pkg Package) error {

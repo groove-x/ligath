@@ -28,26 +28,6 @@ func main() {
 	a.Close()
 }
 
-func setMock(mock bool) Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), "mock", mock))
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func toHandlerFunc(handler TestableHandler) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		isMock, ok := r.Context().Value("mock").(bool)
-		if !ok {
-			panic("illegal mock flag is passed")
-		}
-
-		handler(w, r, isMock)
-	}
-}
-
 type API struct {
 	router  *chi.Mux
 	storage Storage
@@ -73,7 +53,6 @@ func NewAPI() *API {
 		r.Get("/packages", toHandlerFunc(a.getPackages))
 		r.Get("/packages/{package}@{version}", toHandlerFunc(a.getPackage))
 		r.Put("/packages/{package}@{version}", toHandlerFunc(a.putPackage))
-		r.Get("/licenses", toHandlerFunc(a.getLicenses))
 	})
 
 	var s Storage
@@ -202,6 +181,22 @@ func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
 	render.Status(r, 400)
 }
 
-func (a *API) getLicenses(w http.ResponseWriter, r *http.Request, isMock bool) {
-	render.JSON(w, r, a.storage.GetLicenses())
+func setMock(mock bool) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r = r.WithContext(context.WithValue(r.Context(), "mock", mock))
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func toHandlerFunc(handler TestableHandler) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		isMock, ok := r.Context().Value("mock").(bool)
+		if !ok {
+			panic("illegal mock flag is passed")
+		}
+
+		handler(w, r, isMock)
+	}
 }

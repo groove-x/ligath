@@ -117,11 +117,6 @@ func (s *BoltStorage) migrate(fn string, buf []byte) (bool, error) {
 		}
 
 		for _, pkg := range aptOutput.Parsed {
-			for _, c := range pkg.Copyrights {
-				if c.License.Name == "" && c.License.MachineReadableName == "TEXT-TABS" {
-					fmt.Printf("")
-				}
-			}
 			marshaled, err := json.Marshal(pkg)
 			if err != nil {
 				err = fmt.Errorf(
@@ -316,46 +311,4 @@ func (s *BoltStorage) GetNotParsedPackages() []PackageListItem {
 func (s *BoltStorage) GetVerifiedPackages() []PackageListItem {
 	// it's without hyphen because verified bucket is just named "verified"
 	return s.getPackages("verified")
-}
-
-func (s *BoltStorage) GetLicenses() []License {
-	l := map[string]License{}
-
-	err := IterateBucketsItems(
-		s.db,
-		&IterateOption{
-			BucketSuffix: "_parsed",
-		},
-		func(k, v []byte) error {
-			var tmp Package
-			err := json.Unmarshal(v, &tmp)
-			if err != nil {
-				err = fmt.Errorf("failed to unmarshal package: %v", err)
-				log.Fatal(err)
-				return err
-			}
-
-			for _, c := range tmp.Copyrights {
-				if c.License.Name == "TEXT-TABS" || c.License.MachineReadableName == "TEXT-TABS" {
-					print()
-				}
-				l[c.License.MachineReadableName] = c.License
-			}
-			return nil
-		},
-	)
-
-	if err != nil {
-		err = fmt.Errorf("failed to get licenses: %v", err)
-		log.Fatal(err)
-		return []License{}
-	}
-
-	var out []License
-	for _, l := range l {
-		out = append(out, l)
-	}
-
-	SortLicenses(&out)
-	return out
 }

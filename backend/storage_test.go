@@ -150,42 +150,7 @@ func TestSimpleMigration(t *testing.T) {
 			t.Fatalf("different license name: Expected=GPL-3+ Actual=%s", cr.License.Name)
 		}
 
-		// TODO: decide if we add licenses bucket or not
-		/*
-			licenses := tx.Bucket([]byte("licenses"))
-			if licenses == nil {
-				t.Fatal("bucket licenses should exist")
-			}
-
-			raw2 := licenses.Get([]byte("GPL-3+"))
-			var res2 License
-			err = json.Unmarshal(raw2, &res2)
-			if err != nil {
-				t.Fatal("failed to unmarshal:", err)
-			}
-
-			if res2.MachineReadableName != "GPL-3+" {
-				t.Fatalf(
-					"different machine-readable license name: Expected=GPL-3+ Actual=%s",
-					res2.MachineReadableName,
-				)
-			}
-
-			if res2.Name != "GPL-3+" {
-				t.Fatalf(
-					"different license name: Expected=GPL-3+ Actual=%s",
-					res2.Name,
-				)
-			}
-
-			if res2.Body != "This is a test" {
-				t.Fatalf(
-					"different license body: Expected=This is a test Actual=%s",
-					res2.Body,
-				)
-			}
-			return nil
-		*/
+		return nil
 	})
 }
 

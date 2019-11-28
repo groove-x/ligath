@@ -6,3 +6,5 @@ require (
 	github.com/go-chi/render v1.0.1
 	go.etcd.io/bbolt v1.3.2
 )
+
+go 1.13

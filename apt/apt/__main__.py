@@ -45,9 +45,6 @@ class Output:
     not_parsed: List[Package]
 
 
-known_licenses: Dict[str, License] = dict()
-
-
 def parse_copyright(
     package: str,
     path: PathLike,
@@ -76,6 +73,7 @@ def parse_copyright(
     lice_par = [p for p in c.all_paragraphs() if isinstance(p, cr.LicenseParagraph)]
 
     copyrights = []
+    licenses = dict()
 
     for lp in lice_par:
         try:
@@ -85,9 +83,9 @@ def parse_copyright(
             print(f"{package}: {e}")
             return
 
-        if syn not in known_licenses:
+        if syn not in licenses:
             li = License(lp.license.synopsis, lp.license.synopsis, lp.license.text)
-            known_licenses[lp.license.synopsis] = li
+            licenses[lp.license.synopsis] = li
 
     for fp in file_par:
         try:
@@ -106,7 +104,7 @@ def parse_copyright(
             print(f"Unknown License!!: {fp.license.synopsis}")
             return
 
-        lic = known_licenses.get(syn, None)
+        lic = licenses.get(syn, None)
         if fp.copyright is not None:
             cleansed = "\n".join(l.lstrip() for l in fp.copyright.split("\n"))
         else:

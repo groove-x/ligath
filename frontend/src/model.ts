@@ -79,10 +79,14 @@ class Package {
   }
 
   public jsonCompatible(): any {
+    let copyrightsj = new Array<Copyright>();
+    this.copyrights.forEach((c: Copyright) => {
+      copyrightsj.push(c.jsonCompatible());
+    });
     return {
       name: this.name,
       version: this.version,
-      copyrights: this.copyrights,
+      copyrights: copyrightsj,
       raw_copyright: this.rawCopyright,
     }
   }

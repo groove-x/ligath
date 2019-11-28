@@ -29,7 +29,11 @@ class Copyright {
   public license: License;
 
   private get range(): string {
-    return this.fileRange.join('\n');
+    if (this.fileRange === undefined) {
+      return "";
+    } else {
+      return this.fileRange.join('\n');
+    }
   }
 
   private set range(newVal: string) {
@@ -41,6 +45,14 @@ class Copyright {
     this.fileRange = values.file_range || values.fileRange;
     this.license = new License(values.license);
   }
+
+  public jsonCompatible(): any {
+    return {
+      copyright: this.copyright,
+      file_range: this.fileRange,
+      license: this.license,
+    }
+  }
 }
 
 class Package {
@@ -50,13 +62,29 @@ class Package {
   public rawCopyright: string;
 
   constructor(values: any) {
-    this.name = values.name;
-    this.version = values.version;
     this.copyrights = new Array<Copyright>();
-    values.copyrights.forEach((c: any) => {
-      this.copyrights.push(new Copyright(c));
-    });
-    this.rawCopyright = values.raw_copyright;
+
+    if (values === null) {
+      this.name = "";
+      this.version = "";
+      this.rawCopyright = "";
+    } else {
+      this.name = values.name;
+      this.version = values.version;
+      values.copyrights.forEach((c: any) => {
+        this.copyrights.push(new Copyright(c));
+      });
+      this.rawCopyright = values.raw_copyright;
+    }
+  }
+
+  public jsonCompatible(): any {
+    return {
+      name: this.name,
+      version: this.version,
+      copyrights: this.copyrights,
+      raw_copyright: this.rawCopyright,
+    }
   }
 }
 

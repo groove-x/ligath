@@ -59,21 +59,21 @@
             <form>
               <div class="form-group">
                 <label for="range" class="col col-form-label">Range</label>
-                <textarea id="range" class="form-control" v-model="$data.editingCopyright.range"></textarea>
+                <textarea id="range" class="form-control" v-model="$data.editingCopyright.range" v-bind:disabled="!isEditingCopyright"></textarea>
                 <label for="copyright" class="col col-form-label">Copyright</label>
-                <textarea id="copyright" class="form-control" v-model="$data.editingCopyright.copyright"></textarea>
+                <textarea id="copyright" class="form-control" v-model="$data.editingCopyright.copyright" v-bind:disabled="!isEditingCopyright"></textarea>
                 <b-row class="sub-row">
                   <b-col class="col-6 pr-2 pl-0">
                     <label for="license-name" class="col col-form-label">License Name</label>
-                    <input id="license-name" class="form-control" v-model="$data.editingCopyright.license.name"/>
+                    <input id="license-name" class="form-control" v-model="$data.editingCopyright.license.name" v-bind:disabled="!isEditingCopyright"/>
                   </b-col>
                   <b-col class="col-6 pr-0 pl-2">
                     <label for="license-name-machine" class="col col-form-label">Machine-readable License Name</label>
-                    <input id="license-name-machine" class="form-control" v-model="$data.editingCopyright.license.machineReadableName"/>
+                    <input id="license-name-machine" class="form-control" v-model="$data.editingCopyright.license.machineReadableName" v-bind:disabled="!isEditingCopyright"/>
                   </b-col>
                 </b-row>
                 <label for="license-body" class="col col-form-label">License Body</label>
-                <textarea id="license-body" class="form-control" v-model="$data.editingCopyright.license.body"></textarea>
+                <textarea id="license-body" class="form-control" v-model="$data.editingCopyright.license.body" v-bind:disabled="!isEditingCopyright"></textarea>
               </div>
             </form>
             <b-row class="sub-row">
@@ -221,7 +221,7 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { Route } from 'vue-router/types/router';
 import store from '@/store';
-import { Copyright, License } from '@/model';
+import { Copyright, License, Package as PackageObj } from '@/model';
 import axios, { AxiosResponse } from 'axios';
 
 const components = {};
@@ -239,9 +239,10 @@ Component.registerHooks([
 
 @Component({components})
 export default class Package extends Vue {
-  public package: any = {};
+  public package: PackageObj = new PackageObj(null);
   public editingCopyright: any = {};
   public editingCopyrightIndex: number = 0;
+  public isEditingCopyright: boolean = false;
   public state: State = State.Nothing;
 
   public save() {
@@ -249,7 +250,7 @@ export default class Package extends Vue {
     axios.put(
       store.state.endpoint_back
         + `/api/packages/${this.$route.params.name}@${this.$route.params.version}?kind=${this.$route.params.kind}`,
-      this.package,
+      this.package.jsonCompatible(),
     )
       .then((res: AxiosResponse) => {
         if (res.status == 200) {
@@ -304,6 +305,7 @@ export default class Package extends Vue {
   public editCopyright(i: number) {
     this.editingCopyright = this.package.copyrights[i];
     this.editingCopyrightIndex = i;
+    this.isEditingCopyright = true;
   }
 
   public created() {

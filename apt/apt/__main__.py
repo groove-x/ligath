@@ -122,14 +122,10 @@ def gather_apt_licenses():
         tokens = [s for s in l.split(" ") if s != ""]
         packages.append((tokens[1].split(":")[0], tokens[2]))
 
-    lovot: List[str] = []
     exist: List[Tuple[str, str, PathLike]] = []
     not_exist: List[Tuple[str, str]] = []
 
     for p, v in packages:
-        if p.startswith("lovot"):
-            lovot.append(p)
-
         path = pathlib.Path(f"/usr/share/doc/{p}/copyright")
         if path.exists():
             exist.append((p, v, path))

@@ -23,10 +23,6 @@ func NewMockStorage() *MockStorage {
 	return &MockStorage{}
 }
 
-func (s *MockStorage) Setup() error {
-	return nil
-}
-
 func (s *MockStorage) Close() {
 }
 

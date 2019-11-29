@@ -17,7 +17,7 @@ type BoltStorage struct {
 	db *bbolt.DB
 }
 
-func NewBoltStorage(dbPath string) (*BoltStorage, error) {
+func NewBoltStorage(dbPath string, jsons []string) (*BoltStorage, error) {
 	db, err := bbolt.Open(dbPath, 0666, nil)
 	if err != nil {
 		return nil, err
@@ -27,21 +27,12 @@ func NewBoltStorage(dbPath string) (*BoltStorage, error) {
 		db: db,
 	}
 
+	err = b.Migrate(jsons)
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate JSONs: %v", err)
+	}
+
 	return b, nil
-}
-
-func (s *BoltStorage) Setup() error {
-	jsons, err := filepath.Glob("./*.json")
-	if err != nil {
-		return fmt.Errorf("failed to setup boltdb: %v", err)
-	}
-
-	err = s.Migrate(jsons)
-	if err != nil {
-		return fmt.Errorf("failed to migrate JSONs: %v", err)
-	}
-
-	return nil
 }
 
 func (s *BoltStorage) Close() {

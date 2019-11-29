@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,13 +20,36 @@ import (
 type TestableHandler func(w http.ResponseWriter, r *http.Request, isMock bool)
 type Middleware func(next http.Handler) http.Handler
 
+type jsons []string
+
+func (j *jsons) String() string {
+	return "JSONs"
+}
+
+func (j *jsons) Set(value string) error {
+	*j = append(*j, value)
+	return nil
+}
+
+func (j *jsons) Array() []string {
+	return *j
+}
+
 func main() {
-	a := NewAPI()
+	dbPath := ""
+	jsons := &jsons{}
+
+	flag.StringVar(&dbPath, "d", "ligath.db", "DB path")
+	flag.Var(jsons, "j", "JSONs")
+	flag.Parse()
+
+	a := NewAPI(dbPath, jsons.Array())
+	defer a.Close()
+
 	err := a.Serve()
 	if err != nil {
 		panic(err)
 	}
-	a.Close()
 }
 
 type API struct {
@@ -33,7 +57,7 @@ type API struct {
 	storage Storage
 }
 
-func NewAPI() *API {
+func NewAPI(dbPath string, jsons []string) *API {
 	a := &API{}
 	r := chi.NewRouter()
 
@@ -60,15 +84,10 @@ func NewAPI() *API {
 		s = NewMockStorage()
 	} else {
 		var err error
-		s, err = NewBoltStorage("ligath.db")
+		s, err = NewBoltStorage(dbPath, jsons)
 		if err != nil {
 			panic(err)
 		}
-	}
-
-	err := s.Setup()
-	if err != nil {
-		panic(err)
 	}
 
 	wd, _ := os.Getwd()

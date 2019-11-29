@@ -1,7 +1,6 @@
 package main
 
 type Storage interface {
-	Setup() error
 	Close()
 	GetPackage(pkg string, ver string) (*Package, error)
 	GetParsedPackage(pkg string, ver string) (*Package, error)

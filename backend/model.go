@@ -1,5 +1,7 @@
 package main
 
+import "encoding/json"
+
 type License struct {
 	Name                string `json:"name"`
 	MachineReadableName string `json:"machine_readable_name,omitempty"`
@@ -43,4 +45,39 @@ func GPLv2() License {
 		MachineReadableName: "GPL-v2",
 		Body:                "yoyo this is gplv2",
 	}
+}
+
+func CreateSamplePackageInfo() string {
+	j := []Package{
+		{
+			Name:    "libfoo",
+			Version: "1.2.3-4",
+			Copyrights: []Copyright{
+				{
+					Copyright: "Copyright (C) 2015-2019 Foobar, Inc.",
+					FileRange: []string{"include/*", "src/*"},
+					License: License{
+						Name:                "GPL-2",
+						MachineReadableName: "",
+						Body:                "This software is free software; you can redistribute ...",
+					},
+				},
+				{
+					Copyright: "Copyright (C) 1995-2019 Hogepiyo, Inc.",
+					FileRange: []string{"lib/*"},
+					License: License{
+						Name:                "GPL-3",
+						MachineReadableName: "",
+						Body:                "This software is free software; you can redistribute ...",
+					},
+				},
+			},
+			RawCopyright: "libfoo\n\ninclude/*, src/*\nCopyright (C) 2015-2019 Foobar, Inc.\n\nlib/*\nCopyright (C) 1995-2019 Hogepiyo, Inc.\n\nThis software is free software; you can redistribute ...",
+		},
+	}
+	out, err := json.MarshalIndent(&j, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(out)
 }

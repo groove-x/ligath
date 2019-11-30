@@ -64,6 +64,10 @@ func (s *MockStorage) GetVerifiedPackages() []PackageListItem {
 	return []PackageListItem{}
 }
 
+func (s *MockStorage) GetEmptyCopyrightPackages() []PackageListItem {
+	return []PackageListItem{}
+}
+
 func (s *MockStorage) GetLicenses() []License {
 	return []License{
 		GPLv2(),

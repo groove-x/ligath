@@ -79,7 +79,7 @@ func deleteTestDB(t *testing.T) {
 }
 
 func TestSimpleMigration(t *testing.T) {
-	b, err := NewBoltStorage("test.db")
+	b, err := NewBoltStorage("test.db", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,7 +155,7 @@ func TestSimpleMigration(t *testing.T) {
 }
 
 func TestGetPackage(t *testing.T) {
-	b, err := NewBoltStorage("test.db")
+	b, err := NewBoltStorage("test.db", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +185,7 @@ func TestGetPackage(t *testing.T) {
 }
 
 func TestGetMultipleVersion(t *testing.T) {
-	b, err := NewBoltStorage("test.db")
+	b, err := NewBoltStorage("test.db", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -235,7 +235,7 @@ func TestGetMultipleVersion(t *testing.T) {
 }
 
 func TestIterateUtil(t *testing.T) {
-	b, err := NewBoltStorage("test.db")
+	b, err := NewBoltStorage("test.db", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}

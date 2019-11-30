@@ -315,3 +315,55 @@ func (s *BoltStorage) GetVerifiedPackages() []PackageListItem {
 	// it's without hyphen because verified bucket is just named "verified"
 	return s.getPackages("verified")
 }
+
+func (s *BoltStorage) filterPackages(kind string, filter func(pkg Package) bool) ([]Package, error) {
+	var found []Package
+
+	err := s.db.View(func(tx *bbolt.Tx) error {
+		err := tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
+			if !strings.HasSuffix(string(name), kind) {
+				return nil
+			}
+
+			err := b.ForEach(func(k, v []byte) error {
+				var pkg Package
+				err := json.Unmarshal(v, &pkg)
+				if err != nil {
+					log.Printf("failed to parse %s JSON: %s\n", string(k), err)
+					return nil
+				}
+
+				if filter(pkg) {
+					found = append(found, pkg)
+				}
+				return nil
+			})
+			if err != nil {
+				return fmt.Errorf("error on iterating packages: %s", err)
+			}
+			return nil
+		})
+		return err
+	})
+
+	if err != nil {
+		return []Package{}, err
+	}
+	return found, nil
+}
+
+func (s *BoltStorage) GetEmptyCopyrightPackages() []PackageListItem {
+	pkgs, err := s.filterPackages("_notparsed", func(pkg Package) bool {
+		return strings.TrimSpace(pkg.RawCopyright) == ""
+	})
+	if err != nil {
+		log.Printf("failed to find packages: %s", err)
+	}
+
+	var items []PackageListItem
+	for _, pkg := range pkgs {
+		items = append(items, PackageListItem{Name: pkg.Name, Version: pkg.Version})
+	}
+	log.Printf("EmptyCopyright: found %d packages\n", len(items))
+	return items
+}

@@ -193,6 +193,8 @@ func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
 			render.JSON(w, r, a.storage.GetNotParsedPackages())
 		case "verified":
 			render.JSON(w, r, a.storage.GetVerifiedPackages())
+		case "emptycopyright":
+			render.JSON(w, r, a.storage.GetEmptyCopyrightPackages())
 		default:
 			render.Status(r, 400)
 		}

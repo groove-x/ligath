@@ -10,4 +10,5 @@ type Storage interface {
 	GetParsedPackages() []PackageListItem
 	GetNotParsedPackages() []PackageListItem
 	GetVerifiedPackages() []PackageListItem
+	GetEmptyCopyrightPackages() []PackageListItem
 }

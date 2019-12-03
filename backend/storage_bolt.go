@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"go.etcd.io/bbolt"
@@ -278,7 +279,7 @@ func (s *BoltStorage) PutPackage(pkg Package) error {
 }
 
 func (s *BoltStorage) getPackages(kind string) []PackageListItem {
-	l := make([]PackageListItem, 0, 100)
+	m := map[string]PackageListItem{}
 	s.db.View(func(tx *bbolt.Tx) error {
 		tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
 			if !bytes.HasSuffix(name, []byte(kind)) {
@@ -290,25 +291,53 @@ func (s *BoltStorage) getPackages(kind string) []PackageListItem {
 				if len(sp) < 2 {
 					fmt.Print()
 				}
-				l = append(l, PackageListItem{
+				m[sp[0]+sp[1]] = PackageListItem{
 					Name:    sp[0],
 					Version: sp[1],
-				})
+				}
 				return nil
 			})
 			return nil
 		})
 		return nil
 	})
+
+	l := make([]PackageListItem, 0, len(m))
+	for _, v := range m {
+		l = append(l, v)
+	}
+	sort.Slice(l, func(i, j int) bool {
+		return l[i].Name < l[j].Name
+	})
 	return l
 }
 
 func (s *BoltStorage) GetParsedPackages() []PackageListItem {
-	return s.getPackages("_parsed")
+	parsed := s.getPackages("_parsed")
+	verified := s.getPackages("verified")
+	for i := range parsed {
+		for j := range verified {
+			if parsed[i].Name == verified[j].Name && parsed[i].Version == verified[j].Version {
+				parsed[i].Verified = true
+				break
+			}
+		}
+	}
+	return parsed
 }
 
 func (s *BoltStorage) GetNotParsedPackages() []PackageListItem {
-	return s.getPackages("_notparsed")
+	notparsed := s.getPackages("_notparsed")
+	verified := s.getPackages("verified")
+	for i := range notparsed {
+		for j := range verified {
+			if notparsed[i].Name == verified[j].Name && notparsed[i].Version == verified[j].Version {
+				notparsed[i].Verified = true
+				break
+			}
+		}
+	}
+	return notparsed
 }
 
 func (s *BoltStorage) GetVerifiedPackages() []PackageListItem {

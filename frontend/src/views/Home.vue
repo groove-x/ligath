@@ -1,15 +1,16 @@
 <template>
   <b-container fluid id="home-wrapper">
     <b-row id="column-names">
-      <b-col><p>Auto-detected Packages</p></b-col>
-      <b-col><p>Unclassified Packages</p></b-col>
-      <b-col><p>Verified Packages</p></b-col>
+      <b-col><p>Auto-detected Packages  ({{this.$store.state.home.parsed.length}})</p></b-col>
+      <b-col><p>Not-parsed Packages  ({{this.$store.state.home.notParsed.length}})</p></b-col>
+      <b-col><p>Verified Packages  ({{this.$store.state.home.verified.length}})</p></b-col>
     </b-row>
     <b-row class="main-row">
       <b-col class="package-list-col">
         <b-list-group id="parsed" class="package-list">
           <b-list-group-item
             v-for="p in this.$store.state.home.parsed"
+            v-bind:class="{ verified: p.verified }"
             @click="newTab(p.name, p.version, 'parsed')"
             href="#"
           >
@@ -21,6 +22,7 @@
         <b-list-group id="not-parsed" class="package-list">
           <b-list-group-item
             v-for="p in this.$store.state.home.notParsed"
+            v-bind:class="{ verified: p.verified }"
             @click="newTab(p.name, p.version, 'notparsed')"
             href="#"
           >
@@ -62,6 +64,10 @@
     height: 30px;
     padding: 3px;
     -webkit-font-smoothing: antialiased;
+
+    &.verified {
+      background-color: #DFD;
+    }
   }
 </style>
 

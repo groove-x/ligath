@@ -95,10 +95,12 @@ class Package {
 class PackageListItem {
   public name: string;
   public version: string;
+  public verified: boolean;
 
-  constructor(name: string, version: string) {
+  constructor(name: string, version: string, verified: boolean) {
     this.name = name;
     this.version = version;
+    this.verified = verified;
   }
 }
 

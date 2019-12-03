@@ -35,8 +35,9 @@ type MigratedPackage struct {
 }
 
 type PackageListItem struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Verified bool   `json:"verified"`
 }
 
 func GPLv2() License {

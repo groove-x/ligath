@@ -7,7 +7,7 @@
       v-for="[key, tab] in this.$store.getters.tabsAsList"
       :key="key"
       v-bind:to="`/package/${tab.name}@${tab.version}@${tab.kind}`">
-      {{tab.kind}}: {{tab.name}} @ {{tab.version}}
+      {{tab.kind.charAt(0).toUpperCase() + tab.kind.slice(1)}}: {{tab.name}} @ {{tab.version}}
     </b-nav-item>
   </b-nav>
 </template>

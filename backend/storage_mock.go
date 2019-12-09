@@ -70,6 +70,10 @@ func (s *MockStorage) GetEmptyCopyrightPackages() []PackageListItem {
 
 func (s *MockStorage) GetLicenses() []License {
 	return []License{
-		GPLv2(),
+		{
+			Name:                "GNU General Public License version 2",
+			MachineReadableName: "GPL-v2",
+			Body:                "yoyo this is gplv2",
+		},
 	}
 }

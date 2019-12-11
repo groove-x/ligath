@@ -402,7 +402,7 @@ func (s *BoltStorage) iteratePackages(fn func(pkg Package) error) error {
 }
 
 func (s *BoltStorage) GetEmptyCopyrightPackages() []PackageListItem {
-	pkgs, err := s.filterPackages("_notparsed", func(pkg Package) bool {
+	pkgs, err := s.filterPackages("", func(pkg Package) bool {
 		return strings.TrimSpace(pkg.RawCopyright) == ""
 	})
 	if err != nil {

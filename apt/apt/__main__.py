@@ -3,7 +3,7 @@ import pathlib
 import subprocess
 from datetime import datetime
 from socket import gethostname
-from typing import List, Tuple
+from typing import List
 
 from debian import copyright as cr
 

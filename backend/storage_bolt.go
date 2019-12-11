@@ -390,6 +390,17 @@ func (s *BoltStorage) filterPackages(kind string, filter func(pkg Package) bool)
 	return foundl, nil
 }
 
+func (s *BoltStorage) iteratePackages(fn func(pkg Package) error) error {
+	return IterateBucketsItems(s.db, nil, func(k, v []byte) error {
+		var pkg Package
+		err := json.Unmarshal(v, &pkg)
+		if err != nil {
+			return fmt.Errorf("failed to parse %s JSON: %s\n", string(k), err)
+		}
+		return fn(pkg)
+	})
+}
+
 func (s *BoltStorage) GetEmptyCopyrightPackages() []PackageListItem {
 	pkgs, err := s.filterPackages("_notparsed", func(pkg Package) bool {
 		return strings.TrimSpace(pkg.RawCopyright) == ""

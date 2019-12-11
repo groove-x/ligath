@@ -55,6 +55,9 @@ func IterateBuckets(b *bbolt.DB, option *IterateOption, fn func(b *bbolt.Bucket)
 			if suffix != nil && !bytes.HasSuffix(name, suffix) {
 				return nil
 			}
+			if bytes.Contains(name, []byte("migration")) {
+				return nil
+			}
 			found = true
 			return fn(b)
 		})
@@ -101,10 +104,12 @@ func IterateBucketsItems(b *bbolt.DB, option *IterateOption, fn func(k, v []byte
 			if suffix != nil && !bytes.HasSuffix(name, suffix) {
 				return nil
 			}
+			if bytes.Contains(name, []byte("migration")) {
+				return nil
+			}
 			found = true
 			return b.ForEach(fn)
 		})
-		return nil
 	})
 
 	if err != nil {

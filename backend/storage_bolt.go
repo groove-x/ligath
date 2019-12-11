@@ -346,11 +346,14 @@ func (s *BoltStorage) GetVerifiedPackages() []PackageListItem {
 }
 
 func (s *BoltStorage) filterPackages(kind string, filter func(pkg Package) bool) ([]Package, error) {
-	var found []Package
+	found := map[string]Package{}
 
 	err := s.db.View(func(tx *bbolt.Tx) error {
 		err := tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
-			if !strings.HasSuffix(string(name), kind) {
+			if kind != "" && !strings.HasSuffix(string(name), kind) {
+				return nil
+			}
+			if bytes.Contains(name, []byte("migration")) {
 				return nil
 			}
 
@@ -363,7 +366,7 @@ func (s *BoltStorage) filterPackages(kind string, filter func(pkg Package) bool)
 				}
 
 				if filter(pkg) {
-					found = append(found, pkg)
+					found[pkg.Name+pkg.Version] = pkg
 				}
 				return nil
 			})
@@ -378,7 +381,13 @@ func (s *BoltStorage) filterPackages(kind string, filter func(pkg Package) bool)
 	if err != nil {
 		return []Package{}, err
 	}
-	return found, nil
+
+	var foundl []Package
+	for _, v := range found {
+		foundl = append(foundl, v)
+	}
+
+	return foundl, nil
 }
 
 func (s *BoltStorage) GetEmptyCopyrightPackages() []PackageListItem {

@@ -94,7 +94,7 @@ func IterateBucketsItems(b *bbolt.DB, option *IterateOption, fn func(k, v []byte
 	var found bool
 
 	err := b.View(func(tx *bbolt.Tx) error {
-		tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
+		return tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
 			if exact != nil && !bytes.Equal(name, exact) {
 				return nil
 			}

@@ -77,6 +77,7 @@ func NewAPI(dbPath string, jsons []string) *API {
 		r.Get("/packages", toHandlerFunc(a.getPackages))
 		r.Get("/packages/{package}@{version}", toHandlerFunc(a.getPackage))
 		r.Put("/packages/{package}@{version}", toHandlerFunc(a.putPackage))
+		r.Get("/licenses", toHandlerFunc(a.getLicenses))
 	})
 
 	var s Storage
@@ -185,21 +186,34 @@ func (a *API) putPackage(w http.ResponseWriter, r *http.Request, isMock bool) {
 }
 
 func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
-	if kind := r.URL.Query().Get("kind"); kind != "" {
+	var pkgs []PackageListItem
+
+	if license := r.URL.Query().Get("license"); license != "" {
+		pkgs = a.storage.GetPackagesWithLicense(license)
+	} else if kind := r.URL.Query().Get("kind"); kind != "" {
 		switch kind {
 		case "parsed":
-			render.JSON(w, r, a.storage.GetParsedPackages())
+			pkgs = a.storage.GetParsedPackages()
 		case "notparsed":
-			render.JSON(w, r, a.storage.GetNotParsedPackages())
+			pkgs = a.storage.GetNotParsedPackages()
 		case "verified":
-			render.JSON(w, r, a.storage.GetVerifiedPackages())
+			pkgs = a.storage.GetVerifiedPackages()
 		case "emptycopyright":
-			render.JSON(w, r, a.storage.GetEmptyCopyrightPackages())
+			pkgs = a.storage.GetEmptyCopyrightPackages()
 		default:
 			render.Status(r, 400)
 		}
 	}
-	render.Status(r, 400)
+
+	if len(pkgs) > 0 {
+		render.JSON(w, r, pkgs)
+	} else {
+		render.Status(r, 404)
+	}
+}
+
+func (a *API) getLicenses(w http.ResponseWriter, r *http.Request, isMock bool) {
+	render.JSON(w, r, a.storage.GetLicenses())
 }
 
 func setMock(mock bool) Middleware {

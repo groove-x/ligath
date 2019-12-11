@@ -118,4 +118,14 @@ class HomeState {
   }
 }
 
-export { Tab, License, Copyright, Package, HomeState };
+class LicenseState {
+  public licenses: string[];
+  public filteredPackages: PackageListItem[];
+
+  constructor() {
+    this.licenses = new Array<string>();
+    this.filteredPackages = new Array<PackageListItem>();
+  }
+}
+
+export { Tab, License, Copyright, Package, HomeState, LicenseState };

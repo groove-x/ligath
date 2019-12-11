@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { HomeState, Package, Tab } from '@/model';
+import { HomeState, LicenseState, Package, Tab } from '@/model';
 
 Vue.use(Vuex);
 
@@ -14,6 +14,7 @@ export default new Vuex.Store({
     packages: new Map<string, Package>(),
     packagesTick: 0,
     home: new HomeState(),
+    license: new LicenseState(),
   },
   mutations: {
     newTab(state, t) {

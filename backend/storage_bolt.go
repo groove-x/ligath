@@ -396,3 +396,49 @@ func (s *BoltStorage) GetEmptyCopyrightPackages() []PackageListItem {
 	log.Printf("EmptyCopyright: found %d packages\n", len(items))
 	return items
 }
+
+func (s *BoltStorage) GetPackagesWithLicense(license string) []PackageListItem {
+	pkgs, err := s.filterPackages("", func(pkg Package) bool {
+		for i := range pkg.Copyrights {
+			if pkg.Copyrights[i].License.Name == license {
+				return true
+			}
+		}
+		return false
+	})
+	if err != nil {
+		log.Printf("failed to find packages with license: %s", err)
+	}
+
+	var items []PackageListItem
+	for _, pkg := range pkgs {
+		items = append(items, PackageListItem{Name: pkg.Name, Version: pkg.Version})
+	}
+	return items
+}
+
+func (s *BoltStorage) GetLicenses() []License {
+	found := map[string]License{}
+	err := s.iteratePackages(func(pkg Package) error {
+		for i := range pkg.Copyrights {
+			found[pkg.Copyrights[i].License.Name] = pkg.Copyrights[i].License
+		}
+		return nil
+	})
+	if err != nil {
+		log.Println(err)
+		return []License{}
+	}
+
+	delete(found, "")
+
+	var foundl []License
+	for i := range found {
+		foundl = append(foundl, found[i])
+	}
+
+	sort.Slice(foundl, func(i, j int) bool {
+		return foundl[i].Name < foundl[j].Name
+	})
+	return foundl
+}

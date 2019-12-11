@@ -50,6 +50,10 @@ func (s *MockStorage) PutPackage(pkg Package) error {
 	return nil
 }
 
+func (s *MockStorage) GetPackagesWithLicense(license string) []PackageListItem {
+	return []PackageListItem{}
+}
+
 func (s *MockStorage) GetParsedPackages() []PackageListItem {
 	return []PackageListItem{
 		{Name: vim.Name, Version: vim.Version},

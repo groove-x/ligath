@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router, { Route } from 'vue-router';
-import About from '@/views/About.vue';
+import Licenses from '@/views/Licenses.vue';
 import Home from '@/views/Home.vue';
 import Package from '@/views/Package.vue';
 import store from '@/store';
@@ -17,9 +17,9 @@ const r = new Router({
       component: Home,
     },
     {
-      path: '/about',
-      name: 'about',
-      component: About,
+      path: '/licenses',
+      name: 'licenses',
+      component: Licenses,
     },
     {
       path: '/package/:name@:version@:kind',

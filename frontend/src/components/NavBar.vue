@@ -1,6 +1,7 @@
 <template>
   <b-nav tabs id="nav">
-    <b-nav-item exact active-class="active" to="/"><font-awesome-icon icon="igloo" /></b-nav-item>
+    <b-nav-item exact class="function-tab" active-class="active" to="/"><font-awesome-icon icon="igloo" />Home</b-nav-item>
+    <b-nav-item exact class="function-tab" active-class="active" to="/licenses"><font-awesome-icon icon="file-alt" />Licenses</b-nav-item>
     <b-nav-item
       exact
       active-class="active"
@@ -20,4 +21,7 @@
 </script>
 
 <style scoped>
+  .function-tab svg {
+    margin-right: 6px;
+  }
 </style>

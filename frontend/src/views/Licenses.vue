@@ -31,7 +31,7 @@
             <b-list-group class="items-list">
               <b-list-group-item
                 v-for="p in this.$store.state.license.filteredPackages"
-                @click=""
+                @click="newTab(p.name, p.version, 'verified')"
                 href="#"
               >
                 {{p.name}} @ {{p.version}}
@@ -161,10 +161,11 @@
 </style>
 
 <script lang="ts">
-import { Component, Vue, Watch } from 'vue-property-decorator';
+import {Component, Emit, Vue} from "vue-property-decorator";
 import { Route } from 'vue-router/types/router';
+import router from '@/router';
 import store from '@/store';
-import { Copyright, License, Package as PackageObj } from '@/model';
+import {Package, Package as PackageObj} from "@/model";
 import axios, { AxiosResponse } from 'axios';
 
 const components = {};
@@ -176,6 +177,16 @@ Component.registerHooks([
 @Component({components})
 export default class Licenses extends Vue {
   public package: PackageObj = new PackageObj(null);
+
+  @Emit()
+  public newTab(name: string, version: string, kind: string) {
+    store.commit('newTab', {name, version, kind});
+    axios.get(`${store.state.endpoint_back}/api/packages/${name}@${version}?kind=${kind}`)
+      .then((res: AxiosResponse) => {
+        store.commit('setPackageData', {pkg: new Package(res.data), kind: kind});
+        router.push(`/package/${name}@${version}@${kind}`);
+      });
+  }
 
   public created() {
     this.fetchLicenses()

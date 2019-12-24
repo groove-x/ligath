@@ -421,7 +421,7 @@ func (s *BoltStorage) GetEmptyCopyrightPackages() []PackageListItem {
 }
 
 func (s *BoltStorage) GetPackagesWithLicense(license string) []PackageListItem {
-	pkgs, err := s.filterPackages("", func(pkg Package) bool {
+	pkgs, err := s.filterPackages("verified", func(pkg Package) bool {
 		for i := range pkg.Copyrights {
 			if pkg.Copyrights[i].License.Name == license {
 				return true

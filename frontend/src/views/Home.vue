@@ -74,7 +74,7 @@
 <script lang="ts">
 import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
 import MyButton from '@/components/MyButton.vue';
-import { HomeState, Package, Tab } from '@/model';
+import {FunctionTabEnum, HomeState, Package, Tab} from "@/model";
 import { Route } from 'vue-router/types/router';
 import router from '@/router';
 import store from '@/store';
@@ -127,6 +127,7 @@ export default class Home extends Vue {
   }
 
   public beforeRouteEnter(to: Route, from: Route, next: (arg?: any) => void) {
+    store.commit('enterFunctionTab', FunctionTabEnum.HomeTab);
     next((component: Home) => {
       component.counter = component.$store.state.home.lastCounter;
     });

@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { HomeState, LicenseState, Package, Tab } from '@/model';
+import { HomeState, LicenseState, Package, Tab, FunctionTabEnum } from '@/model';
 
 Vue.use(Vuex);
 
@@ -15,6 +15,7 @@ export default new Vuex.Store({
     packagesTick: 0,
     home: new HomeState(),
     license: new LicenseState(),
+    lastFunctionTab: FunctionTabEnum.HomeTab,
   },
   mutations: {
     newTab(state, t) {
@@ -42,6 +43,9 @@ export default new Vuex.Store({
     },
     getVerified(state, pkgs) {
       state.home.verified = pkgs;
+    },
+    enterFunctionTab(state, functionTabEnum) {
+      state.lastFunctionTab = functionTabEnum
     },
   },
   getters: {

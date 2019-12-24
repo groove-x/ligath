@@ -165,7 +165,7 @@ import {Component, Emit, Vue} from "vue-property-decorator";
 import { Route } from 'vue-router/types/router';
 import router from '@/router';
 import store from '@/store';
-import {Package, Package as PackageObj} from "@/model";
+import {Package, Package as PackageObj, FunctionTabEnum} from "@/model";
 import axios, { AxiosResponse } from 'axios';
 
 const components = {};
@@ -193,6 +193,7 @@ export default class Licenses extends Vue {
   }
 
   public beforeRouteEnter(to: Route, from: Route, next: (arg?: any) => void) {
+    store.commit('enterFunctionTab', FunctionTabEnum.LicenseTab);
     next((component: Licenses) => {
       // component.resetCopyright(to, from, component);
     });

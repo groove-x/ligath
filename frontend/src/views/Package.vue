@@ -221,7 +221,7 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { Route } from 'vue-router/types/router';
 import store from '@/store';
-import { Copyright, License, Package as PackageObj } from '@/model';
+import {Copyright, FunctionTabEnum, License, Package as PackageObj} from "@/model";
 import axios, { AxiosResponse } from 'axios';
 
 const components = {};
@@ -280,7 +280,17 @@ export default class Package extends Vue {
     this.$store.commit('closeTab', items[index][1]);
 
     if (items.length === 1) {
-      this.$router.push({name: 'home'});
+      switch (this.$store.state.lastFunctionTab) {
+      case FunctionTabEnum.HomeTab:
+        this.$router.push({name: 'home'});
+        break;
+      case FunctionTabEnum.LicenseTab:
+        this.$router.push({name: 'licenses'});
+        break;
+      case FunctionTabEnum.BulkRenameTab:
+        this.$router.push({name: 'bulk'});
+        break;
+      }
       return;
     } else if (index === items.length - 1) {
       index -= 1;

@@ -128,4 +128,10 @@ class LicenseState {
   }
 }
 
-export { Tab, License, Copyright, Package, HomeState, LicenseState };
+enum FunctionTabEnum {
+  HomeTab = 0,
+  LicenseTab = 1,
+  BulkRenameTab = 2,
+}
+
+export { Tab, License, Copyright, Package, HomeState, LicenseState, FunctionTabEnum };

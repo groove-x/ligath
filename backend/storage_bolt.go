@@ -390,8 +390,8 @@ func (s *BoltStorage) filterPackages(kind string, filter func(pkg Package) bool)
 	return foundl, nil
 }
 
-func (s *BoltStorage) iteratePackages(fn func(pkg Package) error) error {
-	return IterateBucketsItems(s.db, nil, func(k, v []byte) error {
+func (s *BoltStorage) iteratePackages(option *IterateOption, fn func(pkg Package) error) error {
+	return IterateBucketsItems(s.db, option, func(k, v []byte) error {
 		var pkg Package
 		err := json.Unmarshal(v, &pkg)
 		if err != nil {
@@ -439,12 +439,17 @@ func (s *BoltStorage) GetPackagesWithLicense(license string) []PackageListItem {
 
 func (s *BoltStorage) GetLicenses() []License {
 	found := map[string]License{}
-	err := s.iteratePackages(func(pkg Package) error {
-		for i := range pkg.Copyrights {
-			found[pkg.Copyrights[i].License.Name] = pkg.Copyrights[i].License
-		}
-		return nil
-	})
+	err := s.iteratePackages(
+		&IterateOption{
+			BucketExact: "verified",
+		},
+		func(pkg Package) error {
+			for i := range pkg.Copyrights {
+				found[pkg.Copyrights[i].License.Name] = pkg.Copyrights[i].License
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		log.Println(err)
 		return []License{}

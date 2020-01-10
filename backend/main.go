@@ -35,20 +35,94 @@ func (j *jsons) Array() []string {
 	return *j
 }
 
+var helpLines = []string{
+	fmt.Sprintf("%s <help|serve|extract> [OPTION]...", os.Args[0]),
+	"Subcommands:",
+	"    help     Show this help",
+	"    serve    Serve Ligath frontend & backend",
+	"    extract  Extract verified package information",
+	"Options:",
+	"    -h       Show this help",
+}
+
+func replaceUsage(fs *flag.FlagSet) {
+	usage := func() {
+		fmt.Println(strings.Join(helpLines, "\n"))
+	}
+
+	if fs == nil {
+		flag.Usage = usage
+	} else {
+		fs.Usage = usage
+	}
+}
+
 func main() {
-	dbPath := ""
 	jsons := &jsons{}
 
-	flag.StringVar(&dbPath, "d", "ligath.db", "DB path")
-	flag.Var(jsons, "j", "JSONs")
+	replaceUsage(nil)
 	flag.Parse()
 
-	a := NewAPI(dbPath, jsons.Array())
-	defer a.Close()
+	if len(os.Args) < 2 {
+		flag.Usage()
+		return
+	}
 
-	err := a.Serve()
-	if err != nil {
-		panic(err)
+	switch flag.Arg(0) {
+	default:
+		fmt.Println("Unknown subcommand: " + flag.Arg(0))
+		fallthrough
+	case "", "help":
+		flag.Usage()
+		return
+
+	case "serve":
+		helpLines = []string{
+			fmt.Sprintf("%s serve [OPTION]...", os.Args[0]),
+			"Options:",
+			"    -j <JSONPATH>  JSON to migrate",
+			"Examples:",
+			"    ligath serve",
+			"    ligath serve -j debian.json",
+			"    ligath serve -j debian_apt.json -j ubuntu_apt.json",
+		}
+
+		serve := flag.NewFlagSet("serve", flag.ExitOnError)
+		replaceUsage(serve)
+
+		serve.Var(jsons, "j", "JSON to migrate")
+		serve.Parse(os.Args[2:])
+
+		a := NewAPI("ligath.db", jsons.Array())
+		defer a.Close()
+
+		err := a.Serve()
+		if err != nil {
+			panic(err)
+		}
+
+	case "extract":
+		helpLines = []string{
+			fmt.Sprintf("%s extract <FORMAT> <OUTFILE>", os.Args[0]),
+			"Arguments:",
+			"    FORMAT   Output format (available choice: `human`)",
+			"    OUTFILE  Output file name (`-` for stdout)",
+		}
+
+		extract := flag.NewFlagSet("extract", flag.ExitOnError)
+		replaceUsage(extract)
+		extract.Parse(os.Args[2:])
+
+		if extract.NArg() < 2 {
+			extract.Usage()
+			return
+		}
+
+		format, outfile := extract.Arg(0), extract.Arg(1)
+		a := NewAPI("ligath.db", []string{})
+		defer a.Close()
+
+		a.extract(format, outfile)
 	}
 }
 
@@ -214,6 +288,59 @@ func (a *API) getPackages(w http.ResponseWriter, r *http.Request, isMock bool) {
 
 func (a *API) getLicenses(w http.ResponseWriter, r *http.Request, isMock bool) {
 	render.JSON(w, r, a.storage.GetLicenses())
+}
+
+func (a *API) extract(format, filename string) {
+	var err error
+	var out *os.File
+
+	if filename == "-" {
+		out = os.Stdout
+	} else {
+		out, err = os.Create(filename)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create output file %s: %s\n", filename, err)
+			return
+		}
+		defer out.Close()
+	}
+
+	var text string
+
+	switch format {
+	case "human":
+		text = a.extractHumanReadable()
+	default:
+		fmt.Fprintln(os.Stderr, "Unknown format: "+format)
+	}
+
+	out.WriteString(text)
+}
+
+func (a *API) extractHumanReadable() string {
+	var buf []string
+
+	packages := a.storage.GetVerifiedPackages()
+	for _, pkg := range packages {
+		info, err := a.storage.GetVerifiedPackage(pkg.Name, pkg.Version)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to get package %s@%s: %s\n", pkg.Name, pkg.Version, err)
+			continue
+		}
+
+		delim := strings.Repeat("=", len(info.Name)+len(info.Version)+1)
+		s := fmt.Sprintf(
+			"%s\n%s %s\n%s\n\n%s",
+			delim,
+			pkg.Name,
+			pkg.Version,
+			delim,
+			info.RawCopyright,
+		)
+		buf = append(buf, s)
+	}
+
+	return strings.Join(buf, "\n\n")
 }
 
 func setMock(mock bool) Middleware {

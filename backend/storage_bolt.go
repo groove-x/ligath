@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -42,6 +44,8 @@ func (s *BoltStorage) Close() {
 
 func (s *BoltStorage) Migrate(jsons []string) error {
 	for _, j := range jsons {
+		var rd io.Reader
+
 		f, err := os.Open(j)
 		if err != nil {
 			err = fmt.Errorf("failed to migrate: failed to open input JSON: %v", err)
@@ -49,7 +53,20 @@ func (s *BoltStorage) Migrate(jsons []string) error {
 			return err
 		}
 
-		jsonBuf, err := ioutil.ReadAll(f)
+		if strings.HasSuffix(j, "gz") {
+			var err error
+			rd, err = gzip.NewReader(f)
+			if err != nil {
+				err = fmt.Errorf("failed to migrate: failed to create a gzip reader: %v", err)
+				log.Print(err)
+				f.Close()
+				return err
+			}
+		} else {
+			rd = f
+		}
+
+		jsonBuf, err := ioutil.ReadAll(rd)
 		if err != nil {
 			return fmt.Errorf("failed to read %s: %v", j, err)
 		}
@@ -60,16 +77,19 @@ func (s *BoltStorage) Migrate(jsons []string) error {
 			return err
 		}
 
+		j = strings.Replace(filepath.Base(j), ".gz", " (gzipped)", -1)
 		if migrated {
-			log.Printf("migration: %s has just migrated", filepath.Base(j))
+			log.Printf("migration: %s has just migrated", j)
 		} else {
-			log.Printf("migration: %s is already migrated, skipping", filepath.Base(j))
+			log.Printf("migration: %s is already migrated, skipping", j)
 		}
 	}
 	return nil
 }
 
 func (s *BoltStorage) migrate(fn string, buf []byte) (bool, error) {
+	fn = strings.Replace(fn, ".gz", "", -1)
+
 	fnBase := filepath.Base(fn)
 	migrated := s.getMigratedJSONs()
 	for _, m := range migrated {

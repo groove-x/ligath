@@ -1,12 +1,5 @@
 <template>
   <b-container fluid id="wrapper">
-    <b-row id="toolbar" class="mb-2">
-      <b-button-toolbar>
-        <b-button-group>
-          <b-button @click="editPackage" variant="primary">Edit Package</b-button>
-        </b-button-group>
-      </b-button-toolbar>
-    </b-row>
     <b-row id="main-row">
       <b-col class="sub-col col-4">
         <p class="input-title">Licenses</p>

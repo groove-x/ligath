@@ -1,7 +1,7 @@
 <template>
   <b-container fluid id="home-wrapper">
     <b-row id="column-names">
-      <b-col><p>Auto-detected Packages  ({{this.$store.state.home.parsed.length}})</p></b-col>
+      <b-col><p>Parsed Packages  ({{this.$store.state.home.parsed.length}})</p></b-col>
       <b-col><p>Not-parsed Packages  ({{this.$store.state.home.notParsed.length}})</p></b-col>
       <b-col><p>Verified Packages  ({{this.$store.state.home.verified.length}})</p></b-col>
     </b-row>

@@ -1,4 +1,6 @@
-# ligath
+Ligath frontend
+===============
+
 node version: v10.16.0
 
 ## Up
@@ -27,10 +29,11 @@ npm run build
 npm run test
 ```
 
-### Lints and fixes files
+### Lint
 ```
 npm run lint
 ```
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+

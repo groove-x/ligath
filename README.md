@@ -13,6 +13,7 @@ Expected use-cases are:
  - Discuss a license with the law department in your company
  - Export a concatenated LICENSE file and publish it to public
 
+
 # Disclaimer
 
 Ligath is not that clever like Black Duck, FOSSology and WhiteSource;
@@ -26,12 +27,17 @@ Ligath does NOT provide you any legal advices.
 See also: [LICENSE](LICENSE)
 
 
+# Supported Platforms
+
+ - Debian 9 (Stretch)
+
+
 # Tools
 
 For further information, see individual README.md in each directory.
 
 
-## `ligath/apt`
+## `ligath/collect_apt`
 
 Collects and analyzes `copyright` files of Debian packages.
 
@@ -61,11 +67,11 @@ Gather copyright files on a target machine
 1. Install Python 3 into the machine
     - Works with 3.5+ (verified), maybe 3.3+ (not verified)
     - `apt install python3 python3-venv python3-pip` is enough in most cases
-2. Deploy `apt` directory into the machine with `scp` or equivalents
+2. Deploy `collect_apt` directory into the machine with `scp` or equivalents
 3. Prepare a venv
     - `bootstrap.sh` prepares a venv with requirements
-4. Run the gatherer
-    - `source ./env/bin/activate && python3 -m apt`
+4. Run `collect_apt`
+    - `source ./env/bin/activate && python3 -m collect_apt`
 3. Ensure that `YYMMDD.json` is generated
 
 Now you're ready to load it into the backend.
@@ -92,9 +98,7 @@ View and edit copyright notices
 Please visit `localhost:3939` and view some packages. You'll notice that some packages have structured &
 easy-to-read copyright notices while others don't.
 
-It's because of the format of copyright files. Copyright gather tool
-(called `apt` in the [Gather copyright files on a target machine](#gather-copyright-files-on-a-target-machine) section)
-parses a copyright file and checks if it complies with
+It's because of the format of copyright files. `collect_apt` tool parses a copyright file and checks if it complies with
 [Machine-readable Copyright File](https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/) format.
 If it surely is machine-readable, it will get parsed and structured copyright notices will be available in the frontend.
 
@@ -147,7 +151,7 @@ Run `./backend ligath export human LICENSES.txt` to export all verified packages
 Mechanism
 =========
 
-Exported JSONs from copyright gather tool contains raw copyright text and
+Exported JSONs from `collect_apt` tool contains raw copyright text and
 parsed copyright notices for each Debian packages.
 
 The JSONs are migrated by the backend and the packages in JSONs are saved in two buckets: parsed and non-parsed.

@@ -33,16 +33,6 @@
           </b-col>
         </b-row>
       </b-col>
-      <b-col class="sub-col col-4">
-        <p class="input-title">Lorem ipsum</p>
-        <b-row class="sub-row">
-          <b-col class="rounded sub-col">
-            <b-list-group class="items-list">
-              <b-list-group-item href="#">Lorem ipsum dolor sit amet</b-list-group-item>
-            </b-list-group>
-          </b-col>
-        </b-row>
-      </b-col>
     </b-row>
   </b-container>
 </template>

@@ -58,29 +58,18 @@
           <b-col class="col-9 sub-col">
             <form>
               <div class="form-group">
-                <label for="range" class="col col-form-label">Range</label>
+                <label for="range" class="col col-form-label">File Range</label>
                 <textarea id="range" class="form-control" v-model="$data.editingCopyright.range" v-bind:disabled="!isEditingCopyright"></textarea>
                 <label for="copyright" class="col col-form-label">Copyright</label>
                 <textarea id="copyright" class="form-control" v-model="$data.editingCopyright.copyright" v-bind:disabled="!isEditingCopyright"></textarea>
-                <b-row class="sub-row">
-                  <b-col class="col-6 pr-2 pl-0">
-                    <label for="license-name" class="col col-form-label">License Name</label>
-                    <input id="license-name" class="form-control" v-model="$data.editingCopyright.license.name" v-bind:disabled="!isEditingCopyright"/>
-                  </b-col>
-                  <b-col class="col-6 pr-0 pl-2">
-                    <label for="license-name-machine" class="col col-form-label">Machine-readable License Name</label>
-                    <input id="license-name-machine" class="form-control" v-model="$data.editingCopyright.license.machineReadableName" v-bind:disabled="!isEditingCopyright"/>
-                  </b-col>
-                </b-row>
+                <label for="license-name" class="col col-form-label">License Identifier</label>
+                <input id="license-name" class="form-control" v-model="$data.editingCopyright.license.name" v-bind:disabled="!isEditingCopyright"/>
                 <label for="license-body" class="col col-form-label">License Body</label>
                 <textarea id="license-body" class="form-control" v-model="$data.editingCopyright.license.body" v-bind:disabled="!isEditingCopyright"></textarea>
               </div>
             </form>
             <b-row class="sub-row">
-              <b-col class="col-6 text-left parsed-buttons">
-                <b-button id="import" class="btn">Import license from another package</b-button>
-              </b-col>
-              <b-col class="col-6 text-right parsed-buttons">
+              <b-col class="col-12 text-right parsed-buttons">
                 <b-button class="btn-danger">Delete</b-button>
               </b-col>
             </b-row>

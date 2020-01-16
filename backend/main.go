@@ -36,11 +36,11 @@ func (j *jsons) Array() []string {
 }
 
 var helpLines = []string{
-	fmt.Sprintf("%s <help|serve|extract> [OPTION]...", os.Args[0]),
+	fmt.Sprintf("%s <help|serve|export> [OPTION]...", os.Args[0]),
 	"Subcommands:",
 	"    help     Show this help",
 	"    serve    Serve Ligath frontend & backend",
-	"    extract  Extract verified package information",
+	"    export   Export verified package information",
 	"Options:",
 	"    -h       Show this help",
 }
@@ -101,28 +101,28 @@ func main() {
 			panic(err)
 		}
 
-	case "extract":
+	case "export":
 		helpLines = []string{
-			fmt.Sprintf("%s extract <FORMAT> <OUTFILE>", os.Args[0]),
+			fmt.Sprintf("%s export <FORMAT> <OUTFILE>", os.Args[0]),
 			"Arguments:",
 			"    FORMAT   Output format (available choice: `human`)",
 			"    OUTFILE  Output file name (`-` for stdout)",
 		}
 
-		extract := flag.NewFlagSet("extract", flag.ExitOnError)
-		replaceUsage(extract)
-		extract.Parse(os.Args[2:])
+		export := flag.NewFlagSet("export", flag.ExitOnError)
+		replaceUsage(export)
+		export.Parse(os.Args[2:])
 
-		if extract.NArg() < 2 {
-			extract.Usage()
+		if export.NArg() < 2 {
+			export.Usage()
 			return
 		}
 
-		format, outfile := extract.Arg(0), extract.Arg(1)
+		format, outfile := export.Arg(0), export.Arg(1)
 		a := NewAPI("ligath.db", []string{})
 		defer a.Close()
 
-		a.extract(format, outfile)
+		a.export(format, outfile)
 	}
 }
 
@@ -290,7 +290,7 @@ func (a *API) getLicenses(w http.ResponseWriter, r *http.Request, isMock bool) {
 	render.JSON(w, r, a.storage.GetLicenses())
 }
 
-func (a *API) extract(format, filename string) {
+func (a *API) export(format, filename string) {
 	var err error
 	var out *os.File
 
@@ -309,7 +309,7 @@ func (a *API) extract(format, filename string) {
 
 	switch format {
 	case "human":
-		text = a.extractHumanReadable()
+		text = a.exportHumanReadable()
 	default:
 		fmt.Fprintln(os.Stderr, "Unknown format: "+format)
 	}
@@ -317,7 +317,7 @@ func (a *API) extract(format, filename string) {
 	out.WriteString(text)
 }
 
-func (a *API) extractHumanReadable() string {
+func (a *API) exportHumanReadable() string {
 	var buf []string
 
 	packages := a.storage.GetVerifiedPackages()

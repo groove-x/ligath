@@ -73,21 +73,18 @@
 
 <script lang="ts">
 import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
-import MyButton from '@/components/MyButton.vue';
-import {FunctionTabEnum, HomeState, Package, Tab} from "@/model";
+import {FunctionTabEnum, HomeState, Package, Tab} from '@/model';
 import { Route } from 'vue-router/types/router';
 import router from '@/router';
 import store from '@/store';
 import axios, {AxiosResponse} from 'axios';
-
-const components = { MyButton };
 
 Component.registerHooks([
   'beforeRouteEnter',
   'beforeRouteLeave',
 ]);
 
-@Component({components})
+@Component({})
 export default class Home extends Vue {
   public counter: number = 1;
 
@@ -102,7 +99,7 @@ export default class Home extends Vue {
     store.commit('newTab', {name, version, kind});
     axios.get(`${store.state.endpoint_back}/api/packages/${name}@${version}?kind=${kind}`)
       .then((res: AxiosResponse) => {
-        store.commit('setPackageData', {pkg: new Package(res.data), kind: kind});
+        store.commit('setPackageData', {pkg: new Package(res.data), kind});
         router.push(`/package/${name}@${version}@${kind}`);
       });
   }

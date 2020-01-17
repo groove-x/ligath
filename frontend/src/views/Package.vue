@@ -210,7 +210,7 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { Route } from 'vue-router/types/router';
 import store from '@/store';
-import {Copyright, FunctionTabEnum, License, Package as PackageObj} from "@/model";
+import {Copyright, FunctionTabEnum, License, Package as PackageObj} from '@/model';
 import axios, { AxiosResponse } from 'axios';
 
 const components = {};
@@ -242,7 +242,7 @@ export default class Package extends Vue {
       this.package.jsonCompatible(),
     )
       .then((res: AxiosResponse) => {
-        if (res.status == 200) {
+        if (res.status === 200) {
           this.state = State.Succeeded;
         } else {
           this.state = State.Failed;
@@ -250,8 +250,7 @@ export default class Package extends Vue {
       })
       .catch((res: AxiosResponse) => {
         this.state = State.Failed;
-        console.error(res.toString());
-      })
+      });
   }
 
   public close() {
@@ -308,7 +307,6 @@ export default class Package extends Vue {
   }
 
   public created() {
-    console.log(State.Succeeded);
     this.editingCopyright = this.createDummyCopyright();
   }
 

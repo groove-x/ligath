@@ -45,7 +45,7 @@ export default new Vuex.Store({
       state.home.verified = pkgs;
     },
     enterFunctionTab(state, functionTabEnum) {
-      state.lastFunctionTab = functionTabEnum
+      state.lastFunctionTab = functionTabEnum;
     },
   },
   getters: {

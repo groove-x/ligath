@@ -23,14 +23,14 @@ class License {
 }
 
 class Copyright {
-  private fileRange: string[];
-
   public copyright: string;
   public license: License;
 
+  private fileRange: string[];
+
   private get range(): string {
     if (this.fileRange === undefined) {
-      return "";
+      return '';
     } else {
       return this.fileRange.join('\n');
     }
@@ -51,7 +51,7 @@ class Copyright {
       copyright: this.copyright,
       file_range: this.fileRange,
       license: this.license,
-    }
+    };
   }
 }
 
@@ -65,9 +65,9 @@ class Package {
     this.copyrights = new Array<Copyright>();
 
     if (values === null) {
-      this.name = "";
-      this.version = "";
-      this.rawCopyright = "";
+      this.name = '';
+      this.version = '';
+      this.rawCopyright = '';
     } else {
       this.name = values.name;
       this.version = values.version;
@@ -79,7 +79,7 @@ class Package {
   }
 
   public jsonCompatible(): any {
-    let copyrightsj = new Array<Copyright>();
+    const copyrightsj = new Array<Copyright>();
     this.copyrights.forEach((c: Copyright) => {
       copyrightsj.push(c.jsonCompatible());
     });
@@ -88,7 +88,7 @@ class Package {
       version: this.version,
       copyrights: copyrightsj,
       raw_copyright: this.rawCopyright,
-    }
+    };
   }
 }
 

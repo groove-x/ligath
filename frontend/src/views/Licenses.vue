@@ -144,11 +144,11 @@
 </style>
 
 <script lang="ts">
-import {Component, Emit, Vue} from "vue-property-decorator";
+import {Component, Emit, Vue} from 'vue-property-decorator';
 import { Route } from 'vue-router/types/router';
 import router from '@/router';
 import store from '@/store';
-import {Package, Package as PackageObj, FunctionTabEnum} from "@/model";
+import {Package, Package as PackageObj, FunctionTabEnum} from '@/model';
 import axios, { AxiosResponse } from 'axios';
 
 const components = {};
@@ -166,13 +166,13 @@ export default class Licenses extends Vue {
     store.commit('newTab', {name, version, kind});
     axios.get(`${store.state.endpoint_back}/api/packages/${name}@${version}?kind=${kind}`)
       .then((res: AxiosResponse) => {
-        store.commit('setPackageData', {pkg: new Package(res.data), kind: kind});
+        store.commit('setPackageData', {pkg: new Package(res.data), kind});
         router.push(`/package/${name}@${version}@${kind}`);
       });
   }
 
   public created() {
-    this.fetchLicenses()
+    this.fetchLicenses();
   }
 
   public beforeRouteEnter(to: Route, from: Route, next: (arg?: any) => void) {
@@ -185,24 +185,24 @@ export default class Licenses extends Vue {
   public fetchLicenses() {
     axios.get(
       store.state.endpoint_back
-        + `/api/licenses`
+        + `/api/licenses`,
     )
       .then((res: AxiosResponse) => {
-        store.state.license.licenses = res.data
-      })
+        store.state.license.licenses = res.data;
+      });
   }
 
   public fetchPackages(license: string) {
     axios.get(
       store.state.endpoint_back
-        + `/api/packages?license=${encodeURIComponent(license)}`
+        + `/api/packages?license=${encodeURIComponent(license)}`,
     )
       .then((res: AxiosResponse) => {
-        store.state.license.filteredPackages = res.data
+        store.state.license.filteredPackages = res.data;
       })
       .catch((res: AxiosResponse) => {
 
-      })
+      });
   }
 }
 </script>

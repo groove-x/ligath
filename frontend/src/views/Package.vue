@@ -70,7 +70,7 @@
             </form>
             <b-row class="sub-row">
               <b-col class="col-12 text-right parsed-buttons">
-                <b-button class="btn-danger">Delete</b-button>
+                <b-button @click="deleteCopyright()" class="btn-danger">Delete</b-button>
               </b-col>
             </b-row>
           </b-col>
@@ -304,6 +304,19 @@ export default class Package extends Vue {
     this.editingCopyright = this.package.copyrights[i];
     this.editingCopyrightIndex = i;
     this.isEditingCopyright = true;
+  }
+
+  public deleteCopyright() {
+    if (this.package.copyrights.length <= 1) {
+      return;
+    }
+    this.package.copyrights.splice(this.editingCopyrightIndex, 1);
+    let index = this.editingCopyrightIndex - 1;
+    if (index < 0) {
+      index = 0;
+    }
+    this.editingCopyrightIndex = index;
+    this.editingCopyright = this.package.copyrights[index];
   }
 
   public created() {
